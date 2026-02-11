@@ -1,0 +1,10 @@
+[project]
+name = "acb-chatbot-dev-program"
+version = "0.1.0"
+description = "This project contains code relevant to the ACB chatbot development program. "
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.28.1",
+    "python-dotenv>=1.2.1",
+]
