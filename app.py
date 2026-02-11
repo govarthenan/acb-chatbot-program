@@ -44,6 +44,10 @@ def files_handler(file_list: list[str]) -> dict[str:str]:
             # knwon filetypes: txt
             if file_type == ".txt":
                 current_file_content: str = preprocessor_txt(current_path)
+                # check if file is empty
+                if len(current_file_content) == 0:
+                    print(f"\nWARN: File {current_path} is empty!")
+                    continue
                 file_contents[current_path] = current_file_content
             else:
                 print(f"\nWARN: File type {file_type} not supported!\n")
