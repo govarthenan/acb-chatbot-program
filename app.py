@@ -34,7 +34,7 @@ def preprocessor_txt(txt_file_path: str) -> str:
 
 
 def files_handler(file_list: list[str]) -> dict[str, str]:
-    file_contents: dict[str:str] = {}
+    file_contents: dict[str, str] = {}
 
     # check if given files exist
     for current_path in file_list:
@@ -57,7 +57,7 @@ def files_handler(file_list: list[str]) -> dict[str, str]:
     return file_contents
 
 
-def file_content_prompt_generator(file_contents: dict[str:str]) -> str:
+def file_content_prompt_generator(file_contents: dict[str, str]) -> str:
     prompt_starter = "The user has uploaded some files. Here are the contents..."
 
     for key, val in file_contents.items():
@@ -132,6 +132,9 @@ def session_manager() -> None:
         message_history.append({"role": "assistant", "content": llm_response})
 
         print("AI: ", llm_response)
+
+        # clear file upload queue
+        file_upload_paths.clear()
 
 
 if __name__ == "__main__":
