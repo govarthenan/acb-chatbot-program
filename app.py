@@ -11,7 +11,7 @@ load_dotenv("./.env")
 openrouter_secret = os.getenv("OPENROUTER_SECRET")
 
 # message history container
-message_history: list[dict[str:str]] = []
+message_history: list[dict[str, str]] = []
 
 # message history structure
 """
@@ -33,7 +33,7 @@ def preprocessor_txt(txt_file_path: str) -> str:
     return content
 
 
-def files_handler(file_list: list[str]) -> dict[str:str]:
+def files_handler(file_list: list[str]) -> dict[str, str]:
     file_contents: dict[str:str] = {}
 
     # check if given files exist
@@ -63,7 +63,7 @@ def file_content_prompt_generator(file_contents: dict[str:str]) -> str:
     for key, val in file_contents.items():
         prompt_starter: str = prompt_starter + f"\n\nFile: {key}" + f"\n```\n{val}\n```\n"
 
-    prompt_starter = "---"
+    prompt_starter = prompt_starter + "---\n"
 
     return prompt_starter
 
@@ -120,11 +120,6 @@ def session_manager() -> None:
         if len(file_contents) > 0:
             file_prompt_prefix = file_content_prompt_generator(file_contents=file_contents)
             prompt = file_prompt_prefix + prompt
-
-        print(file_contents)
-        print(prompt)
-        os._exit(0)
-
         # save prompt in container
         message_history.append({"role": "user", "content": prompt})
 
