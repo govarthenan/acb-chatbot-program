@@ -1,9 +1,11 @@
+import base64
 import json
 import os
 import sys
-from pathlib import Path
+from urllib.parse import urlparse
 
 import httpx
+import magic
 from dotenv import load_dotenv
 
 # get secrets from .env
@@ -24,6 +26,26 @@ message_history: list[dict[str, str]] = []
 
 # list of files to be uploaded, refreshed at each turn of the conversation
 file_upload_paths: list[str] = []
+local_files: list[str] = []
+remote_files: list[str] = []
+
+
+def is_local_path(file_path: str) -> bool:
+    """Differentiate whether a given file path is remote(internet) or local.
+
+    Args:
+        file_path (str): The file path given by the user during prompt input
+
+    Returns:
+        bool: True if local, False if remote.
+    """
+    result = urlparse(file_path)
+    return all([result.scheme, result.netloc])
+
+
+def get_file_mime_type(file_path: str) -> str:
+    mime_type = magic.from_file(file_path, mime=True)
+    return mime_type
 
 
 def preprocessor_txt(txt_file_path: str) -> str:
@@ -33,26 +55,53 @@ def preprocessor_txt(txt_file_path: str) -> str:
     return content
 
 
+def preprocessor_image(image_file_path: str, image_mime: str) -> str | None:
+    data_url = f"data:{image_mime};base64,"
+
+    with open(image_file_path, "rb") as f:
+        image_data = f.read()
+
+    decoded_base64 = base64.b64encode(image_data).decode()
+
+    return data_url + decoded_base64
+
+
 def files_handler(file_list: list[str]) -> dict[str, str]:
-    file_contents: dict[str, str] = {}
+    file_contents: dict[str, str | None] = {}
+
+    # mime type lists
+    image_mime_types: list[str] = ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"]
+
+    # differentiate local and remote paths
+    # for i in file_list:
+    #     if is_local_path(i):
+    #         local_files.append(i)
+    #     else:
+    #         remote_files.append(i)
 
     # check if given files exist
-    for current_path in file_list:
-        if os.path.isfile(path=current_path):
-            file_type = Path(current_path).suffix
+    for current_path in file_upload_paths:
+        if is_local_path(current_path):
+            if os.path.isfile(path=current_path):
+                file_mime = get_file_mime_type(current_path)
 
-            # knwon filetypes: txt
-            if file_type == ".txt":
-                current_file_content: str = preprocessor_txt(current_path)
-                # check if file is empty
-                if len(current_file_content) == 0:
-                    print(f"\nWARN: File {current_path} is empty!")
-                    continue
-                file_contents[current_path] = current_file_content
+                # knwon filetypes: txt
+                if file_mime == "text/plain":
+                    current_text_content: str = preprocessor_txt(current_path)
+                    # check if file is empty
+                    if len(current_text_content) == 0:
+                        print(f"\nWARN: File {current_path} is empty!")
+                        continue
+                    file_contents[current_path] = current_text_content
+                elif file_mime in image_mime_types:
+                    current_image_content = preprocessor_image(current_path, image_mime=file_mime)
+                    file_contents[current_path] = current_image_content
+                else:
+                    print(f"\nWARN: File type {file_mime} not supported!\n")
             else:
-                print(f"\nWARN: File type {file_type} not supported!\n")
+                print(f"\nWARN: File {current_path} not found!\n")
         else:
-            print(f"\nWARN: File {current_path} not found!\n")
+            ...  # TODO: remote file fetching
 
     return file_contents
 

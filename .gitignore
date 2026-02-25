@@ -11,3 +11,6 @@ wheels/
 
 # Secrets and environment variables
 .env
+
+foo.py
+sample.jpg
