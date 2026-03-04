@@ -26,11 +26,11 @@ message_history: list[dict[str, str]] = []
 
 # list of files to be uploaded, refreshed at each turn of the conversation
 file_upload_paths: list[str] = []
-local_files: list[str] = []
-remote_files: list[str] = []
+current_file_types: list[str] = []
+image_file_indicator = False
 
 
-def is_local_path(file_path: str) -> bool:
+def is_remote_path(file_path: str) -> bool:
     """Differentiate whether a given file path is remote(internet) or local.
 
     Args:
@@ -55,7 +55,7 @@ def preprocessor_txt(txt_file_path: str) -> str:
     return content
 
 
-def preprocessor_image(image_file_path: str, image_mime: str) -> str | None:
+def preprocessor_image(image_file_path: str, image_mime: str) -> str:
     data_url = f"data:{image_mime};base64,"
 
     with open(image_file_path, "rb") as f:
@@ -66,8 +66,10 @@ def preprocessor_image(image_file_path: str, image_mime: str) -> str | None:
     return data_url + decoded_base64
 
 
-def files_handler(file_list: list[str]) -> dict[str, str]:
-    file_contents: dict[str, str | None] = {}
+def files_handler(file_list: list[str]) -> dict[str, list[str]]:
+    global image_file_indicator
+
+    file_contents: dict[str, list[str]] = {}
 
     # mime type lists
     image_mime_types: list[str] = ["image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml"]
@@ -81,7 +83,7 @@ def files_handler(file_list: list[str]) -> dict[str, str]:
 
     # check if given files exist
     for current_path in file_upload_paths:
-        if is_local_path(current_path):
+        if not is_remote_path(current_path):
             if os.path.isfile(path=current_path):
                 file_mime = get_file_mime_type(current_path)
 
@@ -92,10 +94,18 @@ def files_handler(file_list: list[str]) -> dict[str, str]:
                     if len(current_text_content) == 0:
                         print(f"\nWARN: File {current_path} is empty!")
                         continue
-                    file_contents[current_path] = current_text_content
+                    file_contents[current_path] = [current_text_content, "text"]
+                    current_file_types.append("text")
+
                 elif file_mime in image_mime_types:
                     current_image_content = preprocessor_image(current_path, image_mime=file_mime)
-                    file_contents[current_path] = current_image_content
+                    file_contents[current_path] = [current_image_content, "image"]
+                    # check if file is empty
+                    if len(current_image_content) == 0:
+                        print(f"\nWARN: File {current_path} is empty!")
+                        continue
+                    current_file_types.append("image")
+                    image_file_indicator = True
                 else:
                     print(f"\nWARN: File type {file_mime} not supported!\n")
             else:
@@ -106,11 +116,13 @@ def files_handler(file_list: list[str]) -> dict[str, str]:
     return file_contents
 
 
-def file_content_prompt_generator(file_contents: dict[str, str]) -> str:
-    prompt_starter = "The user has uploaded some files. Here are the contents..."
+def file_content_prompt_generator(file_contents: dict[str, list[str]]) -> str:
+    prompt_starter = f"The user has uploaded the following file types: {','.join(current_file_types)}. Please find the contents attached..."
 
+    # append text files
     for key, val in file_contents.items():
-        prompt_starter: str = prompt_starter + f"\n\nFile: {key}" + f"\n```\n{val}\n```\n"
+        if val[1] == "text":
+            prompt_starter: str = prompt_starter + f"\n\nFile: {key}" + f"\n```\n{val[0]}\n```\n"
 
     prompt_starter = prompt_starter + "---\n"
 
@@ -150,6 +162,8 @@ def openrouter_client(user_prompt: str) -> str:
 
 
 def session_manager() -> None:
+    global image_file_indicator
+
     print("Welcm to ChatBot App!\n\n\n")
     while True:
         # take input from user
@@ -170,7 +184,20 @@ def session_manager() -> None:
             file_prompt_prefix = file_content_prompt_generator(file_contents=file_contents)
             prompt = file_prompt_prefix + prompt
         # save prompt in container
-        message_history.append({"role": "user", "content": prompt})
+        if image_file_indicator:
+            for key, val in file_contents.items():
+                if "image" in val:
+                    message_history.append(
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": prompt},
+                                {"type": "image_url", "image_url": {"url": val[0]}},
+                            ],
+                        }
+                    )
+        else:
+            message_history.append({"role": "user", "content": prompt})
 
         # exit check
         exit_app(prompt)
@@ -184,6 +211,8 @@ def session_manager() -> None:
 
         # clear file upload queue
         file_upload_paths.clear()
+        current_file_types.clear()
+        image_file_indicator = False
 
 
 if __name__ == "__main__":
