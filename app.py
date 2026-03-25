@@ -162,13 +162,25 @@ def openrouter_client(user_prompt: str) -> str:
     return decoded_response
 
 
-def session_manager() -> None:
+def knowledge_retrieval(vectordb: chromadb.Collection, prompt: str) -> str:
+    # retrieve relevant chunks from vector DB
+    results = vectordb.query(query_texts=[prompt], n_results=5)
+
+    text_results = repr(results["documents"])
+
+    return "Results from RAG:\n" + text_results + "\n" + prompt
+
+
+def session_manager(vectordb: chromadb.Collection) -> None:
     global image_file_indicator
 
     print("Welcm to ChatBot App!\n\n\n")
     while True:
         # take input from user
         prompt = input("User: ")
+
+        # RAG
+        prompt = knowledge_retrieval(vectordb, prompt)
 
         # get file paths from user
         while True:
@@ -272,6 +284,5 @@ def vectordb_initializer() -> chromadb.Collection:
 
 
 if __name__ == "__main__":
-    vectordb = vectordb_initializer()
-    sys.exit(0)
-    session_manager()
+    vectordb_collection = vectordb_initializer()
+    session_manager(vectordb_collection)
