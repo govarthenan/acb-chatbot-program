@@ -1,0 +1,1854 @@
+Received 18 February 2026, accepted 27 February 2026, date of publication 9 March 2026, date of current version 19 March 2026.
+Digital Object Identifier 10.1109/ACCESS.2026.3670100
+Open-Source Embedding Models: A
+Comprehensive Survey of Techniques,
+Benchmarks, and Applications
+JEREMIAH O. ABIMBOLA 1, GODLOVE SUILA KUABAN 2, AND SAMUEL ABIOLA AJAYI3
+1Silesian University of Technology, 44100 Gliwice, Poland
+2Institute of Theoretical and Applied Informatics, Polish Academy of Sciences, 44100 Gliwice, Poland
+3Texas Southern University, Houston, TX 77004, USA
+Corresponding author: Jeremiah O. Abimbola (jeremiah.abimbola@polsl.pl)
+This work was supported by Statutory Research funds of the Department of Applied Informatics, Silesian University of Technology,
+Gliwice, Poland.
+ABSTRACT Embedding models are fundamental to modern Natural Language Processing (NLP),
+transforming textual data into dense vector representations that capture semantic meaning and relationships.
+This systematic survey focuses exclusively on the landscape of open-source embedding models, tracing
+their evolution from early word embeddings (Word2Vec, GloVe) to advanced contextual and multimodal
+architectures (BERT, Sentence-BERT, BGE, Nomic Embed). Moving beyond descriptive narratives, our
+core contribution is a structured, comparative analysis of these models’ operational tradeoffs, including
+model size, embedding dimensionality, inference latency, and memory consumption. This systematic review
+spans the literature up to 2025 drawing upon 70 papers to provide a critical assessment of standardized
+benchmarks, such as MTEB, and their limitations regarding bias and robustness. Finally, the paper concludes
+by discussing the broad applicability of embedding models across diverse domains, including search engines,
+recommendation systems, fraud detection, and healthcare, and offer recommendations for effective model
+selection and utilization.
+INDEX TERMS Open source, natural language processing (NLP), embedding models, multimodal
+architectures, retrieval-augmented aeneration (RAG) systems.
+I. INTRODUCTION
+Embedding models have become the cornerstone of modern
+Natural Language Processing (NLP), serving as a funda-
+mental layer for a wide array of downstream tasks [1].
+These models function by transforming textual data, whether
+individual words, short phrases, complete sentences, or entire
+documents, into dense numerical vectors within a high-
+dimensional space [2](see Figure 1).
+The key principle behind this transformation is to capture
+semantic meaning and the intricate relationships that exist
+between different textual units [1]. By representing language
+in this numerical format, embedding models enable machine
+learning algorithms to efficiently process and understand the
+nuances of human language [3].
+The associate editor coordinating the review of this manuscript and
+approving it for publication was Maria Chiara Caschera .
+The significance of embedding models lies in their ability
+to convert qualitative textual data into a quantitative form
+that machines can readily interpret and manipulate [4]. This
+numerical representation allows the application of mathe-
+matical and statistical techniques to analyze and compare
+textual information, which is crucial for tasks such as
+semantic search, personalized recommendation, large-scale
+information retrieval, text classification and clustering, and
+question answering systems [5], [6]. The ability to represent
+the meaning of text as numerical vectors has revolutionized
+how machines interact with and understand human language.
+The evolution of embedding models reflects a significant
+paradigm shift in the field of NLP. Early approaches relied
+on symbolic representations, treating words as discrete,
+unrelated entities. The advent of word embeddings marked
+a turning point, allowing semantic similarities to be captured
+in a continuous vector space [1]. These embeddings enabled
+algebraic operations on meaning, such as analogies and
+41284
+2026 The Authors. This work is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 License.
+For more information, see https://creativecommons.org/licenses/by-nc-nd/4.0/ VOLUME 14, 2026
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+FIGURE 1. Illustration of how textual objects are converted into vector
+embeddings.
+concept relatedness, moving beyond keyword matching
+toward deeper semantic understanding. Classical models like
+Word2Vec, GloVe, and FastText [7], [8], [9] exemplify this
+era.
+As NLP tasks grew more complex, there was a need
+to represent larger textual units. This gave rise to sen-
+tence embeddings, where models like Sentence-BERT [10],
+Universal Sentence Encoder [11], and MPNet [12], [13]
+encapsulate the overall meaning of sentences or paragraphs.
+More recently, multimodal embeddings have emerged, inte-
+grating textual and non-textual data (e.g., images, audio,
+graphs) into unified representations. Open-source models
+such as Nomic Embed Vision [14], [15] and OpenCLIP [16]
+demonstrate this expansion of scope.
+While these evolutionary milestones laid the groundwork
+for today’s embedding landscape, the field is now under-
+going a critical paradigm shift driven by efficiency and
+accessibility. Previous surveys in the literature predominantly
+focus on word embeddings or earlier, primitive forms of
+representation learning, and often emphasize benchmark
+performance in isolation. In contrast, this work provides
+a systematic and forward-looking review of open-source
+embedding models (< 2025). To the best of our knowledge,
+this is the first comprehensive survey dedicated exclusively to
+modern open-source embedding models. Beyond descriptive
+performance reporting, we conduct a structured comparative
+meta-analysis of critical operational trade-offs, including
+model size, embedding dimensionality, memory footprint,
+and inference latency. This approach provides practition-
+ers with the crucial, resource-aware guidance needed for
+effective deployment, positioning this manuscript as a
+vital resource for both synthesizing recent developments
+and shaping the future direction of open-source, efficient
+embedding research.
+A. DATA MODALITY
+Embedding models today exhibit versatility across multiple
+data modalities [17]. Text embeddings remain foundational,
+spanning word-level [18], [19], [20], sentence-level [11],
+[21], and document-level representations. Image embed-
+dings, pioneered by models like CLIP and its open-source
+counterpart OpenCLIP, leverage contrastive learning to align
+images and text. In audio, models such as Wav2Vec 2.0
+[22] and HuBERT [23] generate robust speech embeddings,
+enabling tasks like classification, speaker identification, and
+FIGURE 2. A pie chart showing the categories of embedding models.
+audio-text retrieval (e.g., CLAP and AudioCLIP). Further-
+more, graph embeddings extend representation learning to
+relational and structural data. Frameworks like PyTorch
+Geometric and DGL support GNN-based models such as
+GraphSAGE [24], [25] and Graph Attention Networks
+(GATs) [26], with applications in social networks, knowledge
+graphs, and bioinformatics.
+As shown in Figure 2, sentence embeddings currently
+occupy the largest share (35%), followed by word embed-
+dings (30%), multimodal embeddings (20%), and document
+embeddings (15%). These values are indicative estimates,
+informed by recent industry and academic researches: for
+example, sentence embeddings align with Anthropic’s 2025
+Economic Index for RAG tasks (36%) [27], word embeddings
+with Stack Overflow usage statistics ( 28%) [28], multimodal
+embeddings with McKinsey 2025 reports on agentic and
+multi-modal scaling (23%) [29], and document embeddings
+based on a literature review of specialized embedding models
+(∼10–15%). While not exhaustive, this snapshot reflects the
+relative prominence of each category and underscores the
+growing importance of sentence and multimodal embeddings
+in modern NLP. A more precise quantification would
+require systematic analyses of model adoption and real-world
+deployment trends across tasks and languages.
+B. EVALUATION AND BENCHMARKS
+To evaluate and compare embedding models, the NLP
+community relies on standardized benchmarks. Platforms
+such as the Massive Text Embedding Benchmark (MTEB)
+[30] provide a comprehensive suite of tasks, including
+information retrieval, clustering, classification, and semantic
+textual similarity, spanning multiple languages and domains.
+Public leaderboards, notably those hosted by Hugging
+VOLUME 14, 2026 41285
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+Face [31], track ongoing progress and surface state-of-the-art
+embedding models across these tasks. It is important to note
+that the benchmark data and leaderboard results referenced in
+this study reflect a snapshot taken on April 15, 2025. Given
+the rapid pace of development in representation learning,
+model rankings and reported performance may evolve
+significantly beyond this point in time. Despite their utility,
+benchmark results must be interpreted with caution, as strong
+performance on standardized tasks does not always translate
+directly to real-world applications [6]. Beyond aggregate
+accuracy metrics, factors such as representational bias,
+embedding dimensionality, robustness to perturbations, and
+sensitivity to contextual variation remain central evaluation
+challenges. Furthermore, benchmark outcomes often reveal
+trade-offs between open-source and proprietary embedding
+models, influencing practical considerations around deploy-
+ment, cost, transparency, and long-term adoption.
+C. SURVEY METHODOLOGY AND SCOPE
+This manuscript is designed as a systematic, transparent, and
+reproducible survey of open-source embedding models. The
+scope is explicitly bounded to non-proprietary models and
+publicly available scientific literature published or substan-
+tially updated between 2013, marking the introduction of
+modern vector embeddings with Word2Vec—and early 2025.
+The survey traces the evolution from static word embeddings
+to contextual, multimodal, and efficiency-oriented architec-
+tures (e.g., BERT, SBERT, BGE, and Nomic).
+Models included in this review must (i) be fully open-
+source, with open model weights; (ii) demonstrate relevance
+to general NLP or multimodal retrieval tasks; and (iii) report
+empirical evaluations on widely adopted public benchmarks,
+particularly MTEB or MMTEB, along with operational char-
+acteristics such as model size, embedding dimensionality,
+or inference latency. Proprietary or closed-source APIs are
+excluded from in-depth technical analysis and are referenced
+only for historical context or high-level comparison. Models
+limited to highly specialized or narrow application domains
+without broad research applicability are also excluded.
+To ensure objectivity and reproducibility, a structured
+systematic review workflow was followed. The guiding
+research question is: How have open-source embedding
+models evolved from static word vectors to contextual and
+multimodal architectures, and what operational tradeoffs
+govern their deployment? A comprehensive literature search
+was conducted using targeted keywords, including ‘‘embed-
+ding models’’, ‘‘open-source embedding models’’, ‘‘MTEB
+benchmark evaluation’’, ‘‘contextual sentence embeddings’’,
+‘‘word embeddings’’, and ‘‘multimodal retrieval-augmented
+generation’’. Searches were performed across major aca-
+demic and technical repositories, including but not limited
+to google scholar, IEEE Xplore, arXiv, and Hugging Face,
+yielding an initial set of 1,480 records. After deduplica-
+tion (320 records removed) and title–abstract screening,
+215 studies remained for full-text eligibility assessment.
+A subsequent quality appraisal prioritized methodological
+transparency, benchmark reproducibility, and clarity of
+reported metrics, resulting in 110 eligible studies. From this
+corpus, structured data were extracted to support comparative
+analysis, including (i) operational tradeoffs such as parameter
+count, embedding dimension, and inference latency; (ii)
+architectural techniques, including subword modeling, self-
+attention distillation, and Matryoshka learning; and (iii)
+application contexts such as healthcare, fraud detection, and
+retrieval-augmented generation. Following thematic consol-
+idation and historical validation, the corpus was refined
+to 70 core papers, which form the empirical foundation
+of this survey. A comprehensive view can be seen in
+Figure 3
+D. CONTRIBUTIONS OF THIS PAPER
+The primary contribution of this paper is to present
+a forward-looking and comprehensive examination of
+open-source embedding models, with emphasis on their per-
+formance characteristics and practical applications. Moving
+beyond a purely descriptive review of existing studies, this
+work adopts a deployment-focused and analytically grounded
+perspective on the open-source embedding landscape. Instead
+of simply listing available models, benchmarks, and use
+cases, we propose a structured framework that systematically
+links model architecture, benchmark performance, and
+real-world operational considerations. Specifically, we:
+1) Trace the evolution of embedding models, from
+early word embeddings (Word2Vec, GloVe, FastText)
+to advanced contextual and multimodal approaches
+(BERT, Sentence-BERT, MPNet, MiniLM, BGE, GTE,
+and Nomic Embed).
+2) Present a structured comparison of open-source embed-
+ding models, highlighting their strengths, weaknesses,
+and task suitability.
+3) Review benchmarks such as MTEB and analyze their
+role in measuring embedding effectiveness, alongside
+limitations related to bias, dimensionality, and robust-
+ness.
+4) Establish a decision-oriented selection framework that
+links model characteristics (e.g., contextual depth,
+multilingual capability, long-context support, effi-
+ciency mechanisms) to concrete application scenar-
+ios, enabling informed and resource-conscious model
+selection.
+5) Explore practical applications across domains includ-
+ing semantic search, recommender systems, fraud
+detection, and healthcare.
+6) Provide practical guidance for embedding model
+selection and deployment, balancing performance,
+interpretability, and resource constraints.
+II. KEY OPEN-SOURCE EMBEDDING MODELS
+The landscape of open-source embedding models is rich and
+diverse, offering a wide range of options for various NLP
+tasks. Among the foundational models are those focused on
+41286 VOLUME 14, 2026
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+FIGURE 3. Systematic review workflow for the open source embedding
+models.
+representing individual words in a vector space. This section
+presents a selection of common models and is not intended
+to be a comprehensive survey of all available open-source
+embedding models.
+A. WORD EMEBBING MODELS
+1) Word2Vec
+Word2Vec [4], a pioneering model developed by Google,
+learns word embeddings by analyzing the contexts in
+which words appear. It employs two primary architec-
+tures: the Continuous Bag of Words (CBOW), which
+predicts a target word from its surrounding context, and
+Skip-gram, which predicts the surrounding words given
+a target word. Its ability to capture semantic relation-
+ships by placing semantically similar words close together
+in the embedding space made it a highly influential
+model.
+2) CONTINUOUS BAG OF WORDS (CBOW)
+The CBOW model predicts a target word wt from its
+surrounding context words
+wt−c, . . . , wt−1, wt+1, . . . , wt+c (1)
+where c is the context window size. The model aims to
+maximize the conditional probability p(wt|wt−c, . . . , wt+c).
+Mathematically, this can be represented as:
+p(wt|wt−c, . . . , wt+c) =
+exp(v′
+wt
+⊤h)
+P
+w∈V exp(v′
+w
+⊤h)
+(2)
+where v′
+wt
+is the output vector representation of the target
+word wt, h is the context vector obtained by combining the
+input vectors of the context words (e.g., by averaging), and V
+is the vocabulary [32]
+3) Skip-gram
+In contrast, the Skip-gram model predicts the surrounding
+context words given the target word [33]. It aims to maximize
+the average log probability:
+1
+T
+T
+X
+t=1
+X
+−c≤j≤c,j̸=0
+log p(wt+j|wt)
+where T is the number of training words. The conditional
+probability p(wt+j|wt) is often modeled using the softmax
+function, similar to CBOW:
+p(wt+j|wt) =
+exp(v′
+wt+j
+⊤vwt )
+P
+w∈V exp(v′
+w
+⊤vwt )
+where vwt is the input vector of the target word and v′
+wt+j
+is
+the output vector of a context word.
+4) GLOBAL VECTORS FOR WORD REPRESENTATION -
+GLOVE
+Another well-established word embedding technique is
+GloVe (Global Vectors for Word Representation), devel-
+oped by researchers at Stanford University [19]. Unlike
+Word2Vec’s local context focus, GloVe leverages the global
+co-occurrence statistics of words within a corpus to learn
+word embeddings. Its objective is to create a vector space
+where the dot product between the vectors of two words is
+related to the logarithm of their co-occurrence probability.
+This has proven to be particularly effective in capturing
+semantic relationships and performing well in tasks such
+as word analogy [34]. GloVe constructs a word-word co-
+occurrence matrix X, where Xij represents the number of
+times word j appears in the context of word i. The model aims
+to learn word vectors vi and vj such that their dot product
+approximates the logarithm of the words’ co-occurrence
+frequency.
+The cost function J for GloVe is defined as:
+J =
+V
+X
+i=1
+V
+X
+j=1
+f (Xij)(vi
+⊤
+vj + bi + bj − log Xij)2
+(3)
+where bi and bj are bias terms, and f (Xij) is a weighting
+function that gives less weight to frequent word pairs.
+This function is designed to prevent the model from being
+dominated by very frequent words and to provide a cutoff
+for rare words. The relationship between the dot product
+and co-occurrence is key: GloVe learns a vector space where
+the dot product between word vectors reflects the logarithm
+VOLUME 14, 2026 41287
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+of their co-occurrence probability, effectively capturing
+semantic relationships.
+B. TEXT EMBEDDING MODELS
+1) FastText
+FastText, created by Facebook, extends the Word2Vec
+model by incorporating subword information [35]. Instead
+of treating words as atomic units, it breaks them down
+into character n-grams and learns embeddings for these
+subword components. The embedding for a word is then
+represented as the sum of the embeddings of its constituent
+n-grams. This approach allows FastText to handle out-of-
+vocabulary words and capture morphological information,
+making it particularly advantageous for morphologically rich
+languages [36].
+Moving beyond word-level representations, transformer-
+based models have revolutionized the field of embedding
+models.
+2) BIDIRECTIONAL ENCODER REPRESENTATIONS FROM
+TRANSFORMERS
+BERT, developed by Google, is a prime example [37].
+It generates contextualized word embeddings by analyzing
+the entire sequence of words in both left and right directions,
+leveraging the encoder segment of the transformer architec-
+ture and being pre-trained on large-scale text corpora using
+masked language modeling and next sentence prediction
+objectives [38]. This bi-directionality and the transformer’s
+attention mechanism enable it to understand the context of
+words in a sentence more effectively than previous models.
+The core of the transformer is the scaled dot-product
+attention, calculated as:
+Attention(Q, K, V) = softmax
+
+QK⊤
+√
+dk
+
+V (4)
+where Q is the query, K is the key, V is the value, and dk is
+the dimension of the keys. BERT uses multiple layers of these
+attention mechanisms, known as multi-head attention.
+3) SENTENCE-BERT
+While BERT excels at generating contextualized word
+embeddings, SBERT is a framework specifically designed
+to produce semantically meaningful embeddings for entire
+sentences. SBERT builds upon pre-trained BERT networks
+by adding a pooling layer to the output and then fine-tuning
+the model on sentence pair tasks using Siamese or triplet
+network structures [21]. This fine-tuning process optimizes
+the model to produce sentence embeddings that can be
+effectively compared using cosine similarity, making SBERT
+highly suitable for tasks like semantic search and text
+similarity.
+4) MASKED AND PERMUTED PRE-TRAINING FOR
+LANGUAGE UNDERSTANDING
+MPNet, developed by Microsoft Research Asia, represents
+a further advancement in pre-training techniques [12].
+It combines the strengths of BERT’s masked language
+modeling (MLM) and XLNet’s permuted language modeling
+(PLM) while addressing their limitations [39]. In MLM,
+a certain percentage (e.g., 15%) of the input words are
+randomly masked, and the model’s task is to predict the
+masked words based on the context. This forces the model
+to understand the context in both directions (left and right),
+leading to powerful contextualized representations. MPNet
+leverages the dependency among predicted tokens through
+permuted language modeling and takes auxiliary position
+information as input to reduce the discrepancy between
+pre-training and fine-tuning. This innovative approach allows
+the model to achieve strong performance on a variety of
+language understanding tasks.
+5) MiniLM
+For applications requiring efficient embedding generation
+without sacrificing much in performance, MiniLM presents
+a compelling solution [40]. Developed through a process
+known as deep self-attention distillation, MiniLM is a
+distilled version of large transformer-based models like
+BERT [40], [41]. This technique trains a compact ‘‘student’’
+model to replicate the self-attention behavior of the last
+transformer layer of a larger ‘‘teacher’’ model. The result is a
+model that is significantly smaller and faster, yet still retains
+much of the performance of its teacher.
+6) BAAI GENERAL EMBEDDING
+Another powerful family of text embedding models is
+BGE (BAAI General Embedding), developed by the Beijing
+Academy of Artificial Intelligence [42]. They are known for
+their versatility and strong performance across various NLP
+tasks. BGE models—such as BGE-M3—support multiple
+retrieval paradigms, including dense, multi-vector, and sparse
+retrieval. They also offer impressive multilingual capabilities,
+supporting over 100 languages, and are capable of handling
+input sequences up to 8192 tokens, making them suitable for
+both short and long-form text.
+7) GENERAL TEXT EMBEDDING
+Similarly, the GTE (General Text Embedding) models
+from Alibaba Group stand out for their performance in
+multilingual text embedding and retrieval [43]. Models
+like gte-multilingual-base excel in multilingual retrieval
+benchmarks, while others such as GTE-Qwen2-7B-instruct
+and gte-large-en-v1.5 rank highly on the MTEB leaderboard.
+The latter is specifically optimized for English tasks and can
+process very long inputs, up to 8192 tokens.
+8) NOMIC EMBED MODELS
+Finally, Nomic Embed, developed by Nomic AI, offers
+efficient and high-performing models for both text and
+multimodal embeddings [44]. Nomic Embed Text achieves
+strong results compared to proprietary models like OpenAI’s
+ada-002 and text-embedding-3-small, while maintaining a
+41288 VOLUME 14, 2026
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+compact size and full reproducibility thanks to open-source
+training data and code. Meanwhile, Nomic Embed Vision
+extends these capabilities to joint text-image embeddings,
+enabling a range of multimodal applications.
+C. MULTIMODAL EMBEDDING MODELS
+Multimodal embedding models represent a shift from
+single-modality processing to a unified semantic space where
+different data types, such as text, images, and audio, are
+mapped to a shared coordinate system. This alignment allows
+the model to ‘‘understand’’ that the text ‘‘a golden retriever
+in the park’’ and an image of the same scene occupy the
+same semantic neighborhood. The architectural foundation
+of multimodal embeddings has evolved from special-
+ized, rigid structures to flexible, transformer-based unified
+encoders:
+1) CONTRASTIVE DUAL-ENCODERS
+This architecture uses two distinct backbones (e.g., a Vision
+Transformer for images and a BERT-based model for text).
+The models are trained using contrastive learning to pull
+‘‘positive’’ pairs (matching image and text) together while
+pushing ‘‘negative’’ pairs apart.
+2) UNIFIED MULTIMODAL LLMs
+A significant challenge in multimodal embeddings is han-
+dling varying input lengths and resolutions. Nomic Embed
+Vision [14] addresses this by providing high-performance,
+open-source embeddings that support long-context text and
+unified visual-textual search. By employing techniques like
+Matryoshka Representation Learning (MRL), Nomic allows
+for flexible embedding dimensions, enabling users to truncate
+vectors for efficiency—a concept central to the ‘‘New
+Frontiers’’ of retrieval performance.
+3) E5 AND mmE5
+The E5 (Emphasized Embedding) family introduced the
+concept of utilizing weakly supervised data followed by
+fine-tuning on high-quality synthetic data. The recent mul-
+timodal E5 mmE5 [45] extends this to multimodality, using
+a ‘‘deep thinking’’ pass of a multimodal LLM to gener-
+ate synthetic alignment data. This architectural approach
+treats the embedding task as a specialized distillation of
+a much larger multimodal LLM, resulting in state-of-the-
+art performance on the MMEB (Multimodal Embedding
+Benchmark).
+4) CLIP (CONTRASTIVE LANGUAGE-IMAGE PRE-TRAINING)
+CLIP [46] revolutionized the field by demonstrating that sim-
+ple contrastive learning on a massive scale (400 million pairs)
+could create robust, zero-shot multimodal representations.
+It effectively proved that a dual-encoder architecture—
+consisting of a modified ResNet or ViT for vision and
+a Transformer for text—could learn highly transferable
+features without task-specific fine-tuning.
+The progression from static, global embeddings
+(Word2Vec, GloVe) to dynamic, contextual representa-
+tions (BERT, SBERT, MPNet) and finally to specialized,
+efficiency-focused models (MiniLM, BGE, GTE, Nomic
+Embed) marks the key evolutionary steps in the field. This
+diversity compels practitioners to carefully weigh model
+performance against deployment constraints. As summarized
+in Table 1, the decision necessitates a systematic analysis
+of the inherent Efficiency Tradeoffs, where achieving peak
+performance and long-context capabilities often correlates
+with higher latency and memory demands, while lightweight
+models like MiniLM and Nomic Embed offer optimized
+alternatives for resource-constrained environments. For
+example, the latency and memory descriptors in Table 1,
+are relative estimates informed by common deployment
+observations rather than a single unified protocol. In practice,
+‘‘Low’’ corresponds to inference times on the order of
+tens of milliseconds per embedding and memory footprints
+typically below ∼1 GB (e.g., All-MiniLM-L6-v2 on CPU).
+‘‘Moderate’’ indicates average latencies in the 100–300ms
+range with peak memory often around ∼1–2GB , while
+‘‘High’’ refers to larger models with hundreds of milliseconds
+to over one second per query and memory demands exceeding
+∼2–3GB on typical hardware. These bands reflect consistent
+patterns seen across community benchmarks for open-source
+embedding models.
+III. TRAINING DATA AND DATASETS
+A. COMMON CRAWL INITIATIVE
+The Common Crawl initiative is a major open repository of
+web crawl data that has supported research and development
+across fields since its launch in 2008 [47]. It has archived
+petabytes of information, including raw web pages, metadata,
+and text extracts [48], offering a longitudinal view of the inter-
+net’s evolving structure and content. Accessibility remains a
+core principle, with datasets stored on Amazon Web Services’
+Public Data Sets and available without requiring an AWS
+account. As of 2025, the dataset includes documents in many
+languages, though English dominates at about 60% [48],
+[49]. It also includes millions of PDFs and diverse web
+content, organized into three file types: WARC (full content),
+WAT (metadata), and WET (extracted text) [47], allowing
+flexible access based on research needs. Common Crawl
+data has broad applications, such as training natural language
+processing models, conducting computational linguistics
+research, performing market trend analyses, and studying
+cultural and political movements. Furthermore, the regular
+releases of host- and domain-level graphs provide deeper
+insights into the web’s interconnected structure.
+Nevertheless, the dataset has limitations. The automated
+crawl process tends to prioritize frequently linked domains,
+leading to an over-representation of popular websites and
+a lack of coverage for digitally marginalized communities.
+Language distribution is heavily skewed toward English,
+which may introduce biases into downstream tasks like
+word embedding training. Additionally, Common Crawl
+VOLUME 14, 2026 41289
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+TABLE 1. Comparative overview of key open-source embedding models, highlighting architectural design, parameter scale, embedding dimensionality,
+and qualitative computational–efficiency tradeoffs.
+contains significant noise, including spam, offensive content,
+boilerplate text, duplicates, and outdated information. Due
+to its minimal curation approach, problematic content such
+as hate speech remains in the dataset, potentially reinforc-
+ing harmful biases when used for model training. While
+some filtered versions are available, filtering methods are
+often basic and do not eliminate deeper structural biases.
+Differences in processing pipelines can also leave distinct
+‘‘fingerprints’’ on derivative datasets. Moreover, search-
+based access methods can introduce further selection bias,
+affecting the representativeness of extracted subsets.
+B. WIKIPEDIA AND PROJECT GUTENBER
+Wikipedia, a widely popular online encyclopedia, has rapidly
+grown since its inception to encompass an extraordinarily
+large corpus with broad scope and constant updates. Available
+under the GNU Free Documentation License [50], it offers a
+vast amount of freely accessible text, making it a valuable
+resource for training word embeddings. The English version
+of Wikipedia alone contains millions of articles, and the
+platform supports over 300 different languages, making it
+ideal for the collection of sample texts for multilingual
+corpora [51], [52]. The articles within Wikipedia generally
+adhere to a consistent structure and are organized into
+category hierarchies, which can aid in learning semantic
+relationships within specific domains.
+However, the collaborative editing nature of Wikipedia
+also presents challenges. The accuracy of its content is
+frequently questioned, and systemic bias means that quality
+and coverage can be uneven [53]. Variations in English
+dialects, for instance, can introduce differences in semantics,
+diction, and spelling. The sheer volume of text, exceeding
+a terabyte for the English version, necessitates efficient
+processing techniques [54]. While it strives for a neutral
+point of view (NPOV), political bias has been observed,
+with sentiment analysis suggesting a tendency to associate
+right-of-center public figures with more negative sentiment
+compared to left-of-center figures. Bias can also manifest
+in the portrayal of certain topics across different language
+versions, such as the negative emphasis on transgender
+individuals in Russian Wikipedia compared to English or
+French versions [55]. Subjectivity and framing bias, where
+an author’s perspective is presented as absolute truth, can
+also be present. The lack of diversity within the Wikipedia
+editor community, which is predominantly white and male,
+is another factor that can contribute to biases in the
+content [56], [57]. Furthermore, the corpus contains noise in
+the form of contradictions, vandalism, and edits unrelated to
+bias mitigation.
+Project Gutenberg on the other hand, is a long-standing
+volunteer effort focused on digitizing and archiving cultural
+works, primarily consisting of copyright-free literary works
+(books). Founded in 1971, it is the oldest digital library, with a
+collection exceeding 70,000 items. While primarily featuring
+literary fiction, it also includes non-fiction titles such as
+biographies, histories, and reference works. The majority of
+its releases are in the English language, but a significant
+number of non-English works are also available. The standard
+format for texts in Project Gutenberg is plain text, commonly
+using the Latin-1 character set, although some are in UTF-8
+Unicode. This focus on plain text aims to ensure long-term
+readability and accessibility.
+41290 VOLUME 14, 2026
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+A challenge with Project Gutenberg is the inconsistent
+structure of the raw texts, which often contain boilerplate
+information about the creation of the corpus and copyright
+details at the beginning and end of the actual book content.
+This necessitates preprocessing to extract the main text.
+Furthermore, there is no single, universally agreed-upon full
+version of Project Gutenberg, and different studies often
+employ vastly different pre-processing strategies, raising
+concerns about the reproducibility of research results. Bias
+can also be present in the corpus, including gender and
+religious bias, reflecting the perspectives and societal norms
+of the authors and the time periods in which the works were
+written. Given that many of the texts are digitized from
+older printed books, there is also the potential for errors
+introduced during the optical character recognition (OCR)
+process. To address some of these issues, the Standardized
+Project Gutenberg Corpus (SPGC) has been developed as an
+open science approach to a curated version of the complete
+PG data, aiming to provide a more consistent and reliable
+resource for statistical analysis of language. A summary of
+the data corpora can be seen in Table 2
+IV. NEW FRONTIER IN MULTIMODAL EMBEDDING:
+EFFICIENCY AND UNIFICATION
+The quest for computational efficiency in multimodal embed-
+dings is no longer a secondary concern but a primary design
+principle. Recent architectural innovations are fundamentally
+changing how these representations are created and utilized.
+A core strategy is dimensionality reduction [58], which
+allows for the representation of high-dimensional data,
+such as images where each pixel is a dimension, into a
+lower-dimensional space. This process, by identifying com-
+monalities and patterns, reduces the computational power and
+time required for deep-learning models to learn and infer
+from data.
+A notable technique that embodies this principle is the
+Matryoshka embedding [59], [60]. Models like Voyage-3-
+large and Nomic Embed Vision utilize this approach, which
+is designed to concentrate the most important semantic
+information within the initial dimensions of the output vector.
+This allows the vector to be truncated to a smaller size without
+a significant loss of semantic information, thereby balancing
+high performance with lower inference costs and faster search
+times due to a reduced search space.
+Another critical innovation addresses the data bottleneck.
+Multimodal Large Language Models (LLMs) are now being
+leveraged to generate high-quality synthetic datasets that
+cover a wide range of tasks and modality combinations [61],
+[62]. This addresses a significant historical challenge: the
+limited availability of labeled multimodal data, which has
+often hindered embedding model performance. The mmE5
+model [45] is a prime example of this approach, achieving
+state-of-the-art performance on the MMEB Benchmark by
+training on a large-scale, multilingual dataset synthesized via
+a deep thinking process within a single pass of a multimodal
+LLM.
+The evidence points to two distinct, yet complementary,
+approaches to enhancing multimodal embedding efficiency.
+The first, exemplified by mmE5, focuses on improving the
+quality of the training data to build a more robust and
+accurate traditional embedding model. This is a classical
+machine learning strategy where a superior input leads to
+a superior output. The second, which is more radical, re-
+architects the retrieval process itself to bypass the inherent
+scalability limitations of traditional embedding-based search.
+This intellectual divergence suggests that the future of
+multimodal systems may involve a bifurcated strategy,
+where different optimizations are applied depending on the
+specific application’s needs. One approach may be deployed
+for creating general-purpose embeddings, while another,
+more specialized one is used for high-speed, large-scale
+information retrieval.
+V. COMPARATIVE ANALYSIS OF STRENGTHS AND
+WEAKNESSES
+Each open-source embedding model discussed comes with
+its own strengths and trade-offs, making them suitable for
+different NLP tasks and application scenarios as can be seen
+in Table 3. For instance, the Word embedding models such
+as Word2Vec, GloVe, and FastText are widely recognized for
+their efficiency in processing large datasets and their ability to
+capture semantic relationships between words. These models
+generate embeddings based on word co-occurrence patterns,
+making them relatively fast to train, particularly in the case
+of Word2Vec and FastText. However, a key limitation of
+these models is that they produce static embeddings. This
+means a word is always represented by the same vector,
+regardless of the context in which it appears. For example,
+the word ‘‘bank’’ would have the same embedding whether
+it’s used in the sentence ‘‘He went to the bank to withdraw
+cash’’ or ‘‘The river overflowed its bank.’’ This lack of
+contextual awareness can reduce accuracy in tasks requiring
+nuanced understanding. Among these, FastText offers an
+edge by incorporating subword information (character n-
+grams), which allows it to handle out-of-vocabulary words
+and capture morphological variations. This is particularly
+useful for morphologically rich languages or when dealing
+with noisy, user-generated content such as social media text
+or OCR output. However, this added capability increases
+memory usage compared to Word2Vec and GloVe.
+Transformer-based sentence embedding models, such as
+BERT, Sentence-BERT, MPNet, and MiniLM, have signif-
+icantly advanced the ability to capture contextual meaning
+in natural language processing. BERT and MPNet exhibit
+strong performance across a wide array of NLP tasks,
+demonstrating their versatility. Sentence-BERT, specifically
+optimized for generating high-quality sentence embeddings,
+excels in tasks involving semantic similarity. In contrast,
+MiniLM, developed through knowledge distillation, strikes a
+balance between computational efficiency and performance.
+However, a common drawback of these models, particularly
+BERT and MPNet, is their substantial computational cost,
+VOLUME 14, 2026 41291
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+TABLE 2. Comparison of common text sources for word embedding training.
+which can be prohibitive in resource-constrained settings.
+Additionally, these models are often limited by the length of
+input sequences they can process. While pre-trained models
+offer robust general-purpose representations, fine-tuning on
+task-specific data is often necessary to achieve optimal
+results. These models are particularly well-suited for applica-
+tions that require a deep understanding of context, including
+semantic search, text classification, question answering, and
+paraphrase detection.
+In contrast, more advanced sentence and multimodal
+embedding models, such as BGE, GTE, and Nomic Embed,
+have set new benchmarks for performance. BGE models
+are particularly strong in multilingual contexts and support
+long-context inputs, making them ideal for processing
+extended documents. GTE models also excel in multilingual
+retrieval tasks, with certain variants optimized for English
+and capable of handling very long sequences. Nomic
+Embed, distinguished by its efficiency and reproducibility,
+offers a competitive edge while maintaining open-source
+transparency. The Nomic Embed Vision extends these
+capabilities to multimodal tasks, enabling joint embeddings
+of text and images. While BGE models have shown
+promising results, their generalizability to diverse real-world
+datasets remains under investigation, and GTE models may
+exhibit some performance inconsistencies across different
+languages. Additionally, some models within these families
+are still constrained by input length limitations. Neverthe-
+less, these advanced models are particularly valuable for
+high-performance retrieval systems, multilingual applica-
+tions, long-document processing, multimodal search, and any
+scenario where efficiency and transparency are critical.
+VI. BENCHMARK RESULTS AND PERFORMANCE
+EVALUATION
+The Massive Text Embedding Benchmark (MTEB) leader-
+board serves as a central platform for evaluating and
+comparing the performance of various text embedding
+models across a wide range of natural language processing
+(NLP) tasks [30]. This platform offers a comprehensive
+overview of how different models perform on tasks such as
+retrieval, classification, clustering, and semantic similarity,
+among others. Models that rank highly on the MTEB
+leaderboard are often regarded as state-of-the-art in the
+field of text embeddings. For example, NV-Embed-v2 has
+achieved the top rank with an impressive performance across
+56 different tasks, while GTE-Qwen2-7B-instruct is also
+recognized as a top performer on this benchmark.
+In terms of performance and computational efficiency,
+models like Sentence-BERT, including All-Mpnet-Base-
+v2 and All-MiniLM-L6-v2, offer a strong balance. While
+All-Mpnet-Base-v2 generally provides better-quality embed-
+dings, All-MiniLM-L6-v2 is notably faster, making it more
+suitable for applications that require low latency [63].
+BGE models, particularly those developed by the BAAI,
+have demonstrated exceptional performance, especially on
+Chinese text embedding benchmarks, such as C-MTEB,
+and have gained considerable popularity within the NLP
+community. Nomic Embed also stands out, showing remark-
+able capabilities by even outperforming larger models in
+arena-style evaluations, which prioritize user preferences in
+retrieval scenarios.
+When examining performance across specific NLP tasks,
+certain models excel in particular domains. For text classifica-
+tion tasks, BERT and its distilled variants like MiniLM, along
+with Sentence-BERT, consistently yield strong results [64].
+FastText is another popular choice for text classification,
+particularly when dealing with large datasets, due to its
+speed and efficiency. In semantic similarity tasks, models
+like Sentence-BERT, including All-Mpnet-Base-v2 and All-
+MiniLM-L6-v2, are specifically trained to perform well,
+often achieving high scores on Semantic Textual Similarity
+(STS) benchmarks. Other models like MPNet and the BGE
+family also demonstrate excellent capabilities in capturing
+semantic similarity. For information retrieval tasks, models
+explicitly optimized for this purpose, such as BGE (particu-
+larly BGE-M3), GTE models, and Nomic Embed, frequently
+41292 VOLUME 14, 2026
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+TABLE 3. Comparison of embedding models: Strength and weaknesses.
+secure top rankings on the MTEB leaderboard. These models
+are specifically engineered to produce embeddings that
+accurately capture the relevance between search queries and
+documents.
+The performance of these embedding models on various
+benchmarks is influenced by several factors, including the
+training data, model size, and architecture. Models trained on
+larger, more diverse datasets tend to achieve higher scores,
+as they are exposed to a wider range of linguistic patterns
+and semantic relationships [30]. Model size, often correlated
+with performance, is typically measured by the number of
+parameters, with larger models having a greater capacity to
+learn complex patterns [65], [66]. However, larger models
+also require significantly more computational resources for
+both training and inference. The underlying architecture
+also plays a crucial role in performance. Transformer-based
+architectures have generally outperformed earlier recurrent
+and convolutional neural network-based models in many
+NLP tasks, due to their ability to capture long-range depen-
+dencies and contextual information effectively [30], [67].
+Furthermore, fine-tuning pre-trained models on task-specific
+data can significantly enhance performance for particular
+downstream applications [68]. Table 4 below summarizes the
+performance of several top models on the MTEB leaderboard,
+providing insight into their relative rankings across various
+tasks such as retrieval and semantic textual similarity (STS),
+as well as their model size and embedding dimensions.
+Entries in Table 4 mix approximate values and missing
+cells because the underlying MTEB leaderboard and commu-
+nity benchmarks do not always report all subtask scores or
+exact model footprints in a consistent format. Some models
+(e.g., NV-Embed-v2, Bge-Large-en) have complete averaged
+retrieval and STS scores available from public leaderboard
+sources, while others (such as Gte-Qwen2-7B-instruct and
+nomic-embed-text-v1) may not have distinct retrieval or STS
+breakdowns published or may aggregate results differently
+on external leaderboards. Likewise, model size entries are
+often approximated based on published parameter counts or
+commonly observed memory footprints (e.g., quantized sizes
+reported on model hubs) rather than a single standardized
+measurement. These approximations and omissions reflect
+the current state of publicly available benchmark data and
+variations in reporting rather than omissions in the evaluation
+methodology.
+A. NOVEL EVALUATION METRICS FOR A NUANCED
+ASSESSMENT
+The reliance on established benchmarks like the MTEB is no
+longer sufficient for a comprehensive evaluation of modern
+embedding models. MTEB, while foundational, is limited by
+its scope, which lacks diversity in languages, domains, and
+tasks. A new evaluation paradigm is required to address the
+expanded capabilities of modern models.
+To meet this need, the Massive Multilingual Text Embed-
+ding Benchmark (MMTEB) has emerged as a large-scale,
+community-driven expansion of MTEB. MMTEB covers
+over 500 quality-controlled evaluation tasks across more
+than 250 languages. The benchmark’s tasks are diverse
+and challenging, including instruction following, long-
+document retrieval, and code retrieval, representing the
+largest multilingual collection of evaluation tasks to date.
+To facilitate accessibility and reduce computational costs,
+MMTEB employs a novel downsampling method based on
+inter-task correlation, ensuring a diverse selection of tasks
+while preserving the relative model rankings.
+VOLUME 14, 2026 41293
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+TABLE 4. MTEB benchmark results and model information.
+The introduction of MMTEB signals a significant shift in
+the research agenda. While MTEB sought to identify ‘‘univer-
+sal text embeddings’’ that perform well across a broad range
+of tasks, MMTEB’s emphasis on specific, challenging tasks
+suggests a move towards evaluating specialized capabilities.
+This implies that future models may be highly specialized
+for particular tasks and domains rather than being a single,
+one-size-fits-all solution. This change in focus demonstrates
+the field’s increasing maturity and its progression from
+simple generalization to a more nuanced understanding of
+specialized performance.
+B. LONG-CONTEXT CAPABILITIES: NEW BENCHMARKS
+AND CHALLENGES
+The ability of models to process and understand long contexts
+is a crucial capability for real-world applications such as
+legal review and financial analysis. Early benchmarks, such
+as ‘‘Needle-in-a-Haystack,’’ [71] provided only a ‘‘surface
+form of long-context understanding’’ by simply embedding
+a key phrase within irrelevant noise. This simplification does
+not reflect the complex, multi-document reasoning required
+in real-world scenarios.
+To address this, new and more sophisticated bench-
+marks have been developed. Datasets like L-Eval [72] and
+LongBench [73] offer a significant step forward, covering
+diverse fields from law to economics and including both
+English and Chinese texts. However, the most recent and
+advanced benchmark is Loong [74], which is specifically
+designed for extended multi-document question answering.
+The core principle of Loong is to ‘‘leave no document
+behind,’’ meaning every document in the context is relevant
+to the final answer, forcing the model to process the entire
+context and synthesize information from multiple sources.
+Loong includes four novel task types—Spotlight Locating,
+Comparison, Clustering, and Chain of Reasoning, that
+evaluate different facets of multi-document understanding.
+The progression from LongBench to Loong signifies a
+critical shift from simple information retrieval to multi-
+document reasoning. The former primarily tests a model’s
+ability to recall information from a long document, while
+the latter, with its ‘‘Chain of Reasoning’’ task, assesses
+the model’s capacity to perform multi-step, cross-document
+inference. This mirrors the trend in the broader LLM field
+toward massive context windows and demonstrates that
+evaluation methodologies are evolving to keep pace with the
+increasingly complex cognitive tasks that modern models are
+capable of performing.
+As illustrated in Table 5, modern open-source models
+demonstrate a clear correlation between parameter scale
+and their proficiency in complex reasoning tasks. While
+smaller models like All-MiniLM-L6-v2 remain efficient for
+short-form semantic similarity, they lack the architectural
+capacity for the ‘‘Chain of Reasoning’’ and ‘‘Spotlight Locat-
+ing’’ tasks central to the Loong benchmark. Performance
+is primarily quantified via the nDCG@10 (Normalized
+Discounted Cumulative Gain at rank 10) metric. This metric
+is critical for long-context evaluation as it rewards models
+for placing highly relevant documents at the top of the
+retrieval list, applying a logarithmic discount to relevant items
+appearing at lower ranks to reflect the limited processing
+window of downstream LLMs.
+C. MEASURING COMPUTATIONAL AND INFERENTIAL
+EFFICIENCY
+The definition of ‘‘efficiency’’ in the context of embedding
+models has expanded beyond simple metrics like FLOPs
+(Floating-Point Operations Per Second) or training time. With
+the shift to LLMs for embedding tasks, inference costs have
+become a ‘‘persistent concern’’. To address this, researchers
+are exploring various strategies to reduce the size and
+complexity of models while maintaining performance. These
+include pruning, which removes unnecessary parameters;
+quantization, which reduces numerical precision (e.g., from
+32-bit to 8-bit); and knowledge distillation, which trains a
+smaller model to mimic a larger one.
+Latency and model size are also critical metrics. Models
+like Voyage-3-lite exemplify a pragmatic approach to deploy-
+ment, achieving a strong cost-to-performance ratio with a
+smaller output size of 512 dimensions. This architectural
+choice leads to proportionally faster searches compared
+41294 VOLUME 14, 2026
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+TABLE 5. Performance of open-source embedding models on long-context reasoning benchmarks.
+to models with larger dimensions, such as Voyage-3-large
+(2048 dimensions). The mmE5 model further illustrates this
+evolving definition of efficiency by achieving state-of-the-art
+results with a comparatively modest 560 million parameters,
+a stark contrast to the billions of parameters in other LLMs.
+This reflects a field that is moving away from the ‘‘bigger is
+better’’ mindset towards a more practical, application-driven
+approach where efficiency is a primary design constraint for
+real-world usability.
+D. LIMITATIONS OF BENCHMARK EVALUATION
+While benchmarks like MTEB provide a valuable tool for
+comparing and evaluating the performance of embedding
+models, it’s crucial to acknowledge their limitations. Relying
+solely on benchmark results can sometimes lead to a
+skewed perception of a model’s true capabilities and its
+suitability for real-world applications. One key limitation
+is that benchmarks may not cover all relevant downstream
+tasks [75]. Benchmarks are designed to assess performance
+across a range of common NLP tasks, but they might not
+include the specific tasks or nuances of every application [76].
+A model that performs well on a general benchmark might not
+necessarily excel in a highly specialized or domain-specific
+task. However, newer benchmarks, such as BEIR [77] and
+those based on SuperGLUE principles [78], are actively being
+developed to mitigate this overfitting by incorporating more
+diverse and challenging evaluation scenarios. These bench-
+marks emphasize robustness and generalization, offering a
+more reliable assessment of embedding model quality.
+Furthermore, benchmarks can be susceptible to overfit-
+ting [79]. Developers might inadvertently optimize their
+models to perform well on specific benchmark datasets,
+potentially sacrificing generalization ability [80]. This can
+result in models that achieve high scores on benchmarks
+but fail to perform as effectively when applied to unseen
+data or real-world scenarios. Evaluation metrics used in
+benchmarks may also not fully capture the nuances of
+semantic understanding. While metrics like accuracy, F1-
+score, and cosine similarity provide quantitative measures of
+performance, they might not always reflect the subtle aspects
+of language comprehension that are crucial for many NLP
+applications [81].
+It is also important to consider the potential biases present
+in benchmark datasets [82], [83]. If the datasets used for
+evaluation contain inherent biases related to gender, race,
+or other sensitive attributes, the benchmark results might
+not accurately reflect a model’s fairness or its potential for
+generating biased outcomes. Addressing these limitations
+requires a more holistic approach to evaluation, combining
+benchmark results with thorough testing on real-world data
+and careful consideration of ethical implications.
+VII. CHALLENGES IN USING EMBEDDING MODELS
+While embedding models have proven to be incredibly
+powerful tools in NLP, their application is not without its
+challenges and potential pitfalls. One significant concern is
+the issue of bias [83]. Embedding models are trained on vast
+amounts of text data, and if this data contains societal biases
+related to gender, race, or other demographic attributes, these
+biases can be inadvertently encoded into the vector represen-
+tations learned by the model [82]. This can lead to skewed
+or unfair outcomes in downstream applications, such as
+search results that disproportionately favor certain groups or
+recommendation systems that reinforce existing stereotypes.
+Addressing bias in embedding models is therefore a critical
+ethical consideration, requiring careful data curation and the
+development of bias mitigation techniques. Several strategies
+can be employed to detect and mitigate bias. Detection
+methods include analyzing embeddings for skewed repre-
+sentations of gender, race, or other sensitive attributes using
+metrics like the Word Embedding Association Test (WEAT)
+or similar bias measurement techniques [84]. Mitigation
+strategies can be broadly categorized into: Pre-processing
+techniques, which involve modifying the training data to
+balance representation or removing biased examples; In-
+processing techniques, which modify the training objective
+or model architecture to reduce bias during training, such as
+adversarial debiasing; and post-processing techniques, which
+adjust the learned embeddings after training to remove biased
+information, like geometric debiasing.
+Another challenge arises from the dimensionality of the
+embeddings produced by these models. Modern embedding
+models often generate vectors with hundreds or even
+thousands of dimensions (e.g., 768, 1024, or 1536 dimensions
+are common). While higher dimensionality can enable the
+capture of richer semantic information, it also leads to
+increased storage requirements and computational costs [85].
+Furthermore, very high-dimensional data can sometimes
+suffer from the ‘‘curse of dimensionality,’’ where the
+performance of certain machine learning algorithms degrades
+VOLUME 14, 2026 41295
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+as the number of features (dimensions) increases [86].
+Techniques for dimensionality reduction, such as Principal
+Component Analysis (PCA) or Matryoshka Representation
+Learning (MRL) [60], [87], can be employed to mitigate
+these issues by reducing the number of dimensions while
+preserving most of the essential information. For instance,
+the Figure 4 shows how PCA is leveraged to reduce the
+complexity of text representations generated by nomic embed
+model using 14 sample sentences, some IT related an others
+not.
+IT-Related: Python programming, artificial intelligence
+and machine learning, cloud computing (AWS, Azure), Post-
+greSQL databases, cybersecurity, web development (React,
+Node.js), computer networking (TCP/IP).
+Semi-Related: Online education platforms (LMS), digital
+marketing, electronic music production (DAWs).
+Unrelated: Baking sourdough bread, classical music
+concerts, gardening techniques, ancient Roman architecture.
+These representations, which capture the semantic mean-
+ing of phrases, typically exist in a very high-dimensional
+space. By applying principal component analysis, these
+high-dimensional data is projected onto a two-dimensional
+plane. This allows for visual inspection of how different text
+items are positioned relative to each other. The expectation
+is that items with similar meanings or belonging to related
+categories will be located closer together on the resulting
+scatter plot, while dissimilar or unrelated items will be further
+apart. This visual clustering provides an intuitive way to
+assess how well the language model’s embeddings capture
+semantic relationships and distinctions between various
+concepts.
+By applying the PCA, the high-dimensional embeddings
+are projected onto the two-dimensional plane shown in
+Figure 4. This visualization confirms the semantic integrity
+of the Nomic Embed model’s representations. Specifically,
+the IT-Related Concepts form a tight, highly cohesive cluster,
+demonstrating the model accurately perceives their strong
+semantic overlap. Conversely, the Unrelated Concepts (e.g.,
+‘Baking sourdough bread’, ‘Ancient Roman architecture’) are
+widely dispersed and positioned at significant distances from
+the central IT cluster, highlighting the model’s ability to dif-
+ferentiate dissimilar topics. The Semi-Related Concepts (e.g.,
+‘Digital marketing’) occupy an intermediate space, serving
+as a semantic bridge. The practical significance of this result
+is that it validates the semantic structure is well-preserved
+even after dimensionality reduction, directly supporting the
+rationale for using MRL and other dimensionality reduction
+techniques in deployment.
+Embedding models can also exhibit sensitivity to input
+variations. Even minor alterations in the input text, such
+as typos, grammatical errors, or changes in phrasing, can
+sometimes result in significantly different embeddings [88].
+This sensitivity can negatively impact the performance
+of downstream tasks, especially in real-world applications
+where user input might be noisy or inconsistent [89].
+FIGURE 4. PCA scatter plot of mixed items using nomic embed text model
+to show the reduction of text representation from many dimensions to
+2D.
+Pre-processing techniques like spell checking, grammar
+correction, and text normalization can help to improve
+the robustness of embedding models to such variations.
+Additionally, models like FastText, which utilize subword
+embeddings, inherently show some resilience to out-of-
+vocabulary words and misspellings [90]. Finally, contextual
+limitations can pose a challenge, particularly when dealing
+with long documents or extended conversations. While
+transformer-based models like BERT provide contextual
+embeddings, they often have a fixed context window, limiting
+the amount of surrounding text they can consider when
+generating an embedding (e.g., 512 tokens for many BERT-
+based models). This can be problematic when the relevant
+context extends beyond this window. Newer models like
+BGE-M3 and gte-large-en-v1.5 offer larger context windows
+(up to 8192 tokens), which can help in capturing broader
+contextual dependencies. For models with smaller context
+windows, techniques like document chunking and using
+embeddings from multiple chunks can be employed to
+address this limitation.
+VIII. FINETUNING STRATEGIES
+Embedding models traditionally assume static environments;
+however, real-world systems, particularly in robotics and
+knowledge-intensive applications, often operate in dynamic
+settings where new entities and relations continuously
+emerge. This discrepancy introduces significant challenges,
+notably the need for frequent retraining and the phenomenon
+of catastrophic forgetting, where models lose previously
+acquired knowledge when exposed to new data. To address
+these limitations, recent research has explored continual
+learning and efficient finetuning strategies that enable
+embeddings to adapt incrementally without full retraining,
+while also investigating causal approaches to enhance
+interpretability and robustness.
+41296 VOLUME 14, 2026
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+FIGURE 5. DGR architecture. Layers with white outline are linear [91].
+A. CONTINUAL LEARNING FOR EMBEDDINGS
+Traditional knowledge graph embedding (KGE) models such
+as TransE and Analogy operate under the assumption of a
+fixed set of entities and relations, making them ill-suited
+for dynamic environments. In scenarios where new facts
+are continuously observed, these models require complete
+retraining, resulting in high computational overhead and
+vulnerability to catastrophic forgetting [91]. To overcome
+these challenges, Daruna et al. introduce the Continual
+Knowledge Graph Embedding (CKGE) framework, which
+integrates continual learning principles into KGE models.
+CKGE enables incremental updates of embeddings as new
+knowledge becomes available, eliminating the need to retain
+all historical data and significantly reducing retraining costs.
+One of the central methods explored in CKGE is Deep
+Generative Replay (DGR), a technique designed to maintain
+stability across learning sessions. As illustrated in Figure 5,
+the DGR architecture is based on a Variational Autoencoder
+(VAE) framework, where input triples representing head,
+relation, and tail entities are embedded and processed through
+a Gated Recurrent Unit (GRU)-based encoder. This encoder
+projects the input into a latent space that captures semantic
+patterns in a compressed form. A corresponding decoder,
+composed of GRU layers and a softmax output, reconstructs
+prior knowledge from the latent representation, enabling
+the system to ‘‘replay’’ previously learned facts without
+explicitly storing all past data. Linear transformation layers,
+indicated by white outlines in the architecture, facilitate
+transitions between embedding spaces, latent variables, and
+predictions. Through empirical evaluations on benchmarks
+such as WN18RR and FB15K237, Daruna et al. demon-
+strated that DGR significantly mitigates forgetting, albeit
+at the cost of increased training time compared to simpler
+regularization-based methods.
+B. EFFICIENT METHODS FOR UPDATING EMBEDDINGS
+Beyond DGR, several efficient techniques have been pro-
+posed to update embeddings in dynamic environments with-
+out exhaustive retraining. Regularization-based approaches
+such as L2 regularization and Synaptic Intelligence selec-
+tively constrain parameter updates, penalizing deviations
+from previously important weights and thereby preserving
+earlier knowledge [91]. Architectural innovations like Pro-
+gressive Neural Networks and Copy Weight Re-initialization
+further enhance continual learning by allocating separate net-
+work components for new tasks or by strategically resetting
+weights to integrate new information. These methods are
+particularly valuable in resource-constrained settings, where
+storage, computation, and time are limited. Collectively, they
+make incremental embedding updates practical and scalable,
+supporting real-time applications in fields like robotics,
+recommendation systems, and edge computing.
+C. CAUSAL EMBEDDINGS FOR INTERPRETABILITY AND
+ROBUSTNESS
+While continual learning addresses the dynamics of evolving
+knowledge, another emerging frontier focuses on embedding
+causal reasoning directly into model architectures. Causal
+embeddings aim to move beyond the predictive capabil-
+ities of traditional models by explicitly modeling causal
+relationships, thus enabling interventions and counterfac-
+tual reasoning. Unlike standard deep learning models that
+act as closed boxes, causal embeddings provide greater
+transparency and fairness by answering ‘‘what-if’’ scenarios
+based on learned causal structures [92]. Li et al. introduced
+causal embedding frameworks tailored for recommendation
+systems. In their work on ‘‘Multimodal Graph Causal Embed-
+ding for Multimedia-based Recommendation,’’ they leverage
+multimodal data sources to model causal dependencies
+between entities, improving both recommendation accuracy
+and system interpretability. Similarly, their CausalCDR
+VOLUME 14, 2026 41297
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+framework for cross-domain recommendation embeds causal
+knowledge to facilitate the transfer of insights across domains
+while maintaining fairness and reliability. The architecture
+of causal embeddings typically involves processing raw
+input features through encoders that extract high-level causal
+concepts, which are then used for outcome prediction and
+counterfactual analysis. By embedding causal reasoning into
+the learning process, models become more robust against
+biases and more transparent to end users, especially in sen-
+sitive domains such as healthcare, finance, and personalized
+recommendations.
+IX. APPLICATIONS OF EMBEDDING MODELS IN
+VARIOUS DOMAINS
+Embedding models have found widespread applications
+across a multitude of domains, demonstrating their versatility
+and power in understanding and processing natural language.
+In search engines, embedding models enable semantic search
+capabilities, allowing users to find relevant information
+even when their queries use different keywords that have
+the same underlying meaning [93], [94]. By matching the
+semantic meaning of a query with the semantic meaning
+of documents, search engines can provide more accurate
+and comprehensive results. Recommendation systems also
+heavily rely on embedding models to understand user
+preferences [95], [96]. By representing user interests and item
+characteristics as embeddings, these systems can identify
+semantic similarities and provide more personalized and
+relevant recommendations. In the realm of security, fraud
+detection can benefit from embedding models by represent-
+ing user behavior or transaction patterns as vectors [97].
+Anomalous patterns in the embedding space can then be
+identified as potential indicators of fraudulent activity [98].
+The healthcare domain has also seen increasing adoption
+of embedding models for tasks like medical diagnosis [99],
+[100]. By applying these models to medical texts such
+as patient records, research papers, and clinical notes,
+it becomes possible to identify similar cases, extract crucial
+information, and potentially assist in the diagnostic process.
+Specialized models like BioBERT and ClinicalBERT, which
+are BERT variants trained on biomedical text, are particularly
+valuable in this field [101], [102]. Information retrieval is
+a critical area where embedding models significantly con-
+tribute, particularly in the context of Retrieval-Augmented
+Generation (RAG) systems [103], [104]. In RAG systems,
+embedding models are used to retrieve relevant documents
+or passages from a large corpus based on a user’s query.
+The retrieved information is then integrated into the input
+of large language models, enhancing their ability to generate
+more accurate, contextual, and informative responses. This
+retrieval capability is also essential for clustering and classi-
+fication tasks, where embedding models group semantically
+similar data points, enabling efficient content organization.
+These tasks support applications such as sentiment analysis,
+topic modeling, and document categorization [105]. While
+machine translation is not the primary focus for most
+embedding models, they play a crucial role in representing
+the meaning of text in different languages, with multilingual
+embedding models being essential for cross-lingual tasks.
+The practical applications of open-source embedding
+models can be demonstrated through several examples across
+various domains. For instance, in semantic search, models
+like Sentence-BERT (e.g., All-Mpnet-Base-v2 ) are used
+to generate embeddings for documents within a knowledge
+base. When a user submits a query, the model compares the
+query’s embedding to those of the documents, retrieving the
+most semantically relevant articles. In recommendation sys-
+tems, models like Word2Vec or FastText learn embeddings
+for products based on user purchase history. By measuring the
+similarity between the embeddings of previously purchased
+items and other products, the system can suggest new items
+that align with the user’s preferences. In the case of sentiment
+analysis, a BERT model can be fine-tuned on a labeled
+dataset of customer reviews to predict the sentiment of
+unseen reviews. Similarly, in question answering systems
+utilizing RAG, high-performance models like MPNet or BGE
+can retrieve relevant context from a document collection,
+providing the necessary information for a large language
+model to generate an accurate response. Lastly, in the medical
+domain, models like BioBERT can be applied to patient
+notes to find similar cases, aiding in diagnosing conditions
+and planning treatments by identifying patterns from related
+patient data.
+A. THE SHIFT TO GENERATIVE RETRIEVAL
+The most profound re-engineering of the retrieval process
+is the emergence of generative retrieval [106], [107]. This
+cutting-edge approach, showcased by models like GENIUS,
+represents a paradigm shift away from traditional vector
+search. Conventional embedding-based methods map queries
+and database items into a high-dimensional space and then
+perform a nearest-neighbor search to find the most similar
+vectors. This approach, however, faces significant scalability
+challenges, as the cost of building and maintaining indexes
+grows with the size of the dataset, leading to slower retrieval
+times for large collections.
+In contrast, generative retrieval, as demonstrated by the
+GENIUS model presented at the 2025 Conference on
+Computer Vision and Pattern Recognition (CVPR) [108],
+eliminates the need for expensive index building. Instead, the
+generative model directly outputs the unique identifier (ID)
+of the target data item. This enables constant-time retrieval,
+meaning the speed of the search remains constant regardless
+of the database size. The model achieves this through two core
+innovations: semantic quantization, which creates a sequence
+of codes as a target ID, and query augmentation, which helps
+the model generalize to new data by interpolating between
+initial queries and target IDs.
+This transformation challenges the very foundation of
+current Retrieval-Augmented Generation (RAG) systems.
+41298 VOLUME 14, 2026
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+The generative model is no longer a simple vectorizer; it has
+become the entire retrieval engine. This means that future
+multimodal systems may move beyond traditional vector
+databases, relying instead on highly efficient generative
+models that can produce direct, quantifiable search results.
+This represents a significant step forward in optimizing
+both the accuracy and efficiency of multimodal information
+retrieval.
+X. LIMITATIONS
+This survey provides a structured, deployment-aware per-
+spective on open-source embedding models while operating
+within several defined boundaries. Rather than establishing
+definitive rankings, it treats benchmark results as time-
+dependent snapshots, acknowledging that performance is
+highly sensitive to evaluation protocols and domain-specific
+characteristics. The analysis of efficiency, scalability, and
+operational trade-offs is derived from published reports and
+documentation rather than a unified, controlled experimental
+evaluation, meaning that variables such as hardware config-
+urations, numerical precision, and batch settings may limit
+strict comparability. Furthermore, the scope is constrained
+by the inconsistency of technical reporting across the lit-
+erature, particularly regarding training data, ‘‘open-source’’
+licensing nuances, and the emerging field of multimodal
+representations which can impact traceability. Ultimately, the
+work discusses practical deployment, bias, and robustness at
+a conceptual and synthesis-driven level rather than through
+primary empirical validation, highlighting ongoing research
+challenges in standardizing evaluations across heterogeneous
+tasks and maintaining representation quality under domain
+shift.
+XI. CONCLUSION AND RECOMMENDATIONS
+This study has explored the rich landscape of open-source
+embedding models, highlighting their definition, signifi-
+cance, diverse types, and the crucial role of benchmarks in
+their evaluation. A comprehensive list of prominent open-
+source models, ranging from foundational word embeddings
+like Word2Vec and GloVe to advanced contextual and
+multimodal embeddings such as BERT, Sentence-BERT,
+MPNet, MiniLM, BGE, GTE, and Nomic Embed, has
+been presented. Each model exhibits unique strengths
+and weaknesses, making them suitable for different NLP
+tasks and application scenarios. Benchmark results from
+platforms like MTEB provide valuable insights into their
+relative performance on tasks such as text classification,
+semantic similarity, and information retrieval, underscoring
+the influence of factors like training data, model size, and
+architecture on their effectiveness. Common pitfalls and chal-
+lenges associated with using embedding models, including
+bias, dimensionality issues, sensitivity to input variations,
+and contextual limitations, necessitate careful consideration
+and the application of appropriate mitigation strategies.
+The wide-ranging applications of embedding models across
+domains like search engines, recommendation systems,
+fraud detection, medical diagnosis, information retrieval,
+and content organization demonstrate their transformative
+potential in various industries. Furthermore, the ability
+of embedding models to enhance documentation through
+semantic search, content organization, improved linking, and
+personalized experiences highlights their value in creating
+more effective and user-friendly information resources.
+Beyond benchmark performance, an important insight
+from this survey is that embedding model selection should
+be treated as an engineering decision rather than a purely
+accuracy-driven choice. Marginal improvements in bench-
+mark scores often come at a disproportionate cost in latency,
+memory footprint, and operational complexity, particularly
+for large transformer-based models. Therefore, it is required
+to make a reasonable tradeoff between performance metrics,
+memory footprint, and operational complexity, and energy
+consumption to ensure acceptable performance, lower cost
+and to satisfy sustainability requirements.
+Selecting the most suitable open-source embedding model
+for a specific need requires careful consideration of several
+factors. The primary driver should be the specific NLP
+task at hand, as different models are optimized for different
+applications. For tasks requiring fine-grained semantic under-
+standing at the word level, traditional word embeddings might
+suffice, while tasks involving contextual understanding of
+sentences or documents generally benefit from transformer-
+based models. The need for multilingual support is another
+critical factor, with models like BGE and GTE offering
+strong capabilities in this area. Computational efficiency and
+resource constraints should also be considered, as larger,
+more powerful models often come with higher computational
+costs. The length of the input text can also influence model
+selection, with newer models offering larger context windows
+for handling longer documents. Ultimately, the desired level
+of accuracy and the specific requirements of the application
+will guide the choice.
+In practice, efficient sentence-level embeddings such
+as MiniLM-, MPNet-, or Nomic-based models frequently
+provide superior cost–performance tradeoffs for produc-
+tion systems, including retrieval-augmented generation and
+semantic search pipelines. High-capacity models are best
+reserved for accuracy-critical scenarios where latency and
+memory constraints are secondary. It is often beneficial to
+experiment with a few different models and evaluate their
+performance on a relevant dataset. In many cases, fine-tuning
+a pre-trained model on domain-specific data can lead to
+significant improvements in performance, making this an
+important step in optimizing the use of embedding models
+for particular applications.
+Finally, this survey highlights the need for future research
+to move beyond accuracy-centric evaluation by incorpo-
+rating standardized efficiency-aware benchmarks, broader
+multilingual and multimodal assessments, and adaptive
+embedding strategies that explicitly balance precision and
+computational cost at inference time. More fundamentally,
+the field lacks standardized, hardware-aware evaluation
+VOLUME 14, 2026 41299
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+protocols that jointly measure accuracy, robustness, bias,
+energy consumption, and latency under realistic deployment
+conditions. Addressing these gaps, along with improving
+multilingual equity, multimodal consistency, and robustness
+under domain shift—remains a central research priority for
+the next generation of embedding systems.
+REFERENCES
+[1] S. Ruder, I. Vulić, and A. Søgaard, ‘‘A survey of cross-lingual
+word embedding models,’’ J. Artif. Intell. Res., vol. 65, pp. 569–631,
+Aug. 2019.
+[2] Q. Liu, M. J. Kusner, and P. Blunsom, ‘‘A survey on contextual
+embeddings,’’ 2020, arXiv:2003.07278.
+[3] Y. Li and T. Yang, ‘‘Word embedding for understanding natural
+language: A survey,’’ in Guide to Big Data Applications. Springer, 2017,
+pp. 83–104.
+[4] K. W. Church, ‘‘Word2vec,’’ Natural Lang. Eng., vol. 23, no. 1,
+pp. 155–162, 2017.
+[5] N. C. F. Codella, ‘‘MedImageInsight: An open-source embedding model
+for general domain medical imaging,’’ 2024, arXiv:2410.06542.
+[6] M. Xu, ‘‘Understanding graph embedding methods and their applica-
+tions,’’ SIAM Rev., vol. 63, no. 4, pp. 825–853, Jan. 2021.
+[7] J. Camacho-Collados and M. T. Pilehvar, ‘‘From word to sense
+embeddings: A survey on vector representations of meaning,’’ J. Artif.
+Intell. Res., vol. 63, pp. 743–788, Dec. 2018.
+[8] F. Almeida and G. Xexéo, ‘‘Word embeddings: A survey,’’ 2019,
+arXiv:1901.09069.
+[9] S. J. Johnson, M. R. Murty, and I. Navakanth, ‘‘A detailed review on word
+embedding techniques with emphasis on word2vec,’’ Multimedia Tools
+Appl., vol. 83, no. 13, pp. 37979–38007, Oct. 2023.
+[10] J. Seo, S. Lee, L. Liu, and W. Choi, ‘‘TA-SBERT: Token attention
+sentence-BERT for improving sentence representation,’’ IEEE Access,
+vol. 10, pp. 39119–39128, 2022.
+[11] D. Cer, Y. Yang, S.-y. Kong, N. Hua, N. Limtiaco, R. St. John,
+N. Constant, M. Guajardo-Cespedes, S. Yuan, C. Tar, Y.-H. Sung,
+B. Strope, and R. Kurzweil, ‘‘Universal sentence encoder,’’ 2018,
+arXiv:1803.11175.
+[12] K. Song, X. Tan, T. Qin, J. Lu, and T. Liu, ‘‘MPNet: Masked and
+permuted pre-training for language understanding,’’ in Proc. Adv. Neural
+Inf. Process. Syst., 2020, pp. 16857–16867.
+[13] E. Zhu, H. Feng, L. Chen, Y. Lai, and S. Chai, ‘‘MP-Net: A multi-
+center privacy-preserving network for medical image segmentation,’’
+IEEE Trans. Med. Imag., vol. 43, no. 7, pp. 2718–2729, Jul. 2024.
+[14] Z. Nussbaum, B. Duderstadt, and A. Mulyar, ‘‘Nomic embed vision:
+Expanding the latent space,’’ 2024, arXiv:2406.18587.
+[15] S.-Y. Tseng, S. Narayanan, and P. Georgiou, ‘‘Multimodal embeddings
+from language models for emotion recognition in the wild,’’ IEEE Signal
+Process. Lett., vol. 28, pp. 608–612, 2021.
+[16] M. Cherti, R. Beaumont, R. Wightman, M. Wortsman, G. Ilharco,
+C. Gordon, C. Schuhmann, L. Schmidt, and J. Jitsev, ‘‘Reproducible scal-
+ing laws for contrastive language-image learning,’’ in Proc. IEEE/CVF
+Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2023, pp. 2818–2829.
+[17] R. Kiros, R. Salakhutdinov, and R. Zemel, ‘‘Multimodal neural language
+models,’’ in Proc. Int. Conf. Mach. Learn., 2014, pp. 595–603.
+[18] T. Mikolov, K. Chen, G. Corrado, and J. Dean, ‘‘Efficient estimation of
+word representations in vector space,’’ 2013, arXiv:1301.3781.
+[19] J. Pennington, R. Socher, and C. Manning, ‘‘Glove: Global vectors for
+word representation,’’ in Proc. Conf. Empirical Methods Natural Lang.
+Process. (EMNLP), 2014, pp. 1532–1543.
+[20] P. Bojanowski, E. Grave, A. Joulin, and T. Mikolov, ‘‘Enriching word
+vectors with subword information,’’ Trans. Assoc. Comput. Linguistics,
+vol. 5, pp. 135–146, Dec. 2017.
+[21] N. Reimers and I. Gurevych, ‘‘Sentence-BERT: Sentence embeddings
+using Siamese BERT-networks,’’ 2019, arXiv:1908.10084.
+[22] A. Baevski, H. Zhou, A. Mohamed, and M. Auli, ‘‘Wav2vec 2.0: A
+framework for self-supervised learning of speech representations,’’ in
+Proc. Adv. Neural Inf. Process. Syst., 2020, pp. 12449–12460.
+[23] W.-N. Hsu, Y.-H.-H. Tsai, B. Bolte, R. Salakhutdinov, and A. Mohamed,
+‘‘HuBERT: How much can a bad teacher benefit ASR pre-training?’’
+in Proc. IEEE Int. Conf. Acoust., Speech Signal Process. (ICASSP),
+Jun. 2021, pp. 6533–6537.
+[24] W. L. Hamilton, R. Ying, and J. Leskovec, ‘‘Inductive representation
+learning on large graphs,’’ in Proc. Adv. Neural Inf. Process. Syst.,
+vol. 30, 2017, pp. 1024–1034.
+[25] J. Liu, G. P. Ong, and X. Chen, ‘‘GraphSAGE-based traffic speed
+forecasting for segment network with sparse data,’’ IEEE Trans. Intell.
+Transp. Syst., vol. 23, no. 3, pp. 1755–1766, Mar. 2022.
+[26] P. Veličković, G. Cucurull, A. Casanova, A. Romero, P. Liò, and
+Y. Bengio, ‘‘Graph attention networks,’’ 2017, arXiv:1710.10903.
+[27] R. Appel, P. McCrory, A. Tamkin, M. McCain, T. Neylon, and
+M. Stern. (2025). Anthropic Economic Index Report: Uneven
+Geographic and Enterprise AI Adoption. [Online]. Available:
+https://www.anthropic.com/research/anthropic-economic-index-
+september-2025-report
+[28] S. Overflow. (2025). 2025 Developer Survey. Found That 84% of
+Developers Use or Plan to Use AI Tools in Their Workflows. [Online].
+Available: https://survey.stackoverflow.co/2025/
+[29] M. . Company. (2025). The State of Ai2025: Agents, Innovation, and
+Transformation. Reports That 23% of Organizations Have Scaled AI
+Agent Deployments. [Online]. Available: https://www.mckinsey.com/
+[30] N. Muennighoff, N. Tazi, L. Magne, and N. Reimers, ‘‘MTEB: Massive
+text embedding benchmark,’’ 2022, arXiv:2210.07316.
+[31] S. M. Jain, ‘‘Hugging face,’’ in Introduction to Transformers for
+NLP: With Hugging Face Library Models To Solve Problems. Cham,
+Switzerland: Springer, 2022, pp. 51–67.
+[32] H. Xia, ‘‘Continuous-bag-of-words and skip-gram for word vector
+training and text classification,’’ J. Phys., Conf. Ser., vol. 2634, no. 1,
+Nov. 2023, Art. no. 012052.
+[33] C. McCormick. (Apr. 2016). Word2vec Tutorial-
+the Skip-Gram Model. [Online]. Available:
+http://mccormickml.com/2016/04/19/word2vectutorial-the-skip-gram-
+model
+[34] M. Cochez, P. Ristoski, S. P. Ponzetto, and H. Paulheim, ‘‘Global
+RDF vector space embeddings,’’ in Proc. 16th Int. Semantic Web Conf.
+Semantic Web (ISWC), Vienna, Austria, Oct. 2017, pp. 190–207.
+[35] A. Joulin, E. Grave, P. Bojanowski, M. Douze, H. Jégou, and
+T. Mikolov, ‘‘FastText.Zip: Compressing text classification models,’’
+2016, arXiv:1612.03651.
+[36] T. Yao, Z. Zhai, and B. Gao, ‘‘Text classification model based on
+fastText,’’ in Proc. IEEE Int. Conf. Artif. Intell. Inf. Syst. (ICAIIS),
+Mar. 2020, pp. 154–157.
+[37] M. V. Koroteev, ‘‘BERT: A review of applications in natural language
+processing and understanding,’’ 2021, arXiv:2103.11943.
+[38] W. Shi and V. Demberg, ‘‘Next sentence prediction helps implicit
+discourse relation classification within and across domains,’’ in Proc.
+Conf. Empirical Methods Natural Lang. Process. 9th Int. Joint Conf.
+Natural Lang. Process. (EMNLP-IJCNLP), 2019, pp. 5789–5795.
+[39] Z. Yang, ‘‘XLNet: Generalized autoregressive pretraining for language
+understanding,’’ in Proc. Adv. Neural Inf. Process. Syst., 2019, pp. 1–11.
+[40] W. Wang, F. Wei, L. Dong, H. Bao, N. Yang, and M. Zhou, ‘‘MiniLM:
+Deep self-attention distillation for task-agnostic compression of pre-
+trained transformers,’’ in Proc. Adv. Neural Inf. Process. Syst., 2020,
+pp. 5776–5788.
+[41] W. Wang, H. Bao, S. Huang, L. Dong, and F. Wei, ‘‘MiniLMv2:
+Multi-head self-attention relation distillation for compressing pretrained
+transformers,’’ 2021, arXiv:2012.15828.
+[42] J. Chen, S. Xiao, P. Zhang, K. Luo, D. Lian, and Z. Liu, ‘‘M3-embedding:
+Multi-linguality, multi-functionality, multi-granularity text embeddings
+through self-knowledge distillation,’’ 2024, arXiv:2402.03216.
+[43] Z. Li, X. Zhang, Y. Zhang, D. Long, P. Xie, and M. Zhang, ‘‘Towards
+general text embeddings with multi-stage contrastive learning,’’ 2023,
+arXiv:2308.03281.
+[44] Z. Nussbaum, J. X. Morris, B. Duderstadt, and A. Mulyar, ‘‘Nomic
+embed: Training a reproducible long context text embedder,’’ 2024,
+arXiv:2402.01613.
+[45] H. Chen, L. Wang, N. Yang, Y. Zhu, Z. Zhao, F. Wei, and Z. Dou,
+‘‘MmE5: Improving multimodal multilingual embeddings via high-
+quality synthetic data,’’ 2025, arXiv:2502.08468.
+[46] Y. Li, F. Liang, L. Zhao, Y. Cui, W. Ouyang, J. Shao, F. Yu, and J. Yan,
+‘‘Supervision exists everywhere: A data efficient contrastive language-
+image pre-training paradigm,’’ 2021, arXiv:2110.05208.
+[47] S. Baack, ‘‘A critical analysis of the largest source for generative
+AI training data: Common crawl,’’ in Proc. ACM Conf. Fairness,
+Accountability, Transparency, Jun. 2024, pp. 2199–2208.
+41300 VOLUME 14, 2026
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+[48] A. S. Luccioni and J. D. Viviano, ‘‘What’s in the box? A preliminary
+analysis of undesirable content in the common crawl corpus,’’ 2021,
+arXiv:2105.02732.
+[49] M. A. Mehmood, H. M. Shafiq, and A. Waheed, ‘‘Understanding regional
+context of world wide web using common crawl corpus,’’ in Proc. IEEE
+13th Malaysia Int. Conf. Commun. (MICC), Nov. 2017, pp. 164–169.
+[50] E. Anhang, ‘‘GNU free documentation license,’’ Diplomarbeit MIT
+LATEX, p. 109, 2002.
+[51] D. S. Weld, R. Hoffmann, and F. Wu, ‘‘Using Wikipedia to bootstrap open
+information extraction,’’ ACM SIGMOD Rec., vol. 37, no. 4, pp. 62–68,
+Mar. 2009.
+[52] D. S. Weld, F. Wu, E. Adar, S. Amershi, J. Fogarty, R. Hoffmann, K. Patel,
+and M. Skinner, ‘‘Intelligence in Wikipedia,’’ in Proc. AAAI Conf. Artif.
+Intell. (AAAI) Senior Papers Track, 2008, pp. 1609–1614.
+[53] S. Weissman, S. Ayhan, J. Bradley, and J. Lin, ‘‘Identifying duplicate and
+contradictory information in Wikipedia,’’ in Proc. 15th ACM/IEEE-CS
+Joint Conf. Digit. Libraries, Jun. 2015, pp. 57–60.
+[54] F. Wu and D. S. Weld, ‘‘Autonomously semantifying Wikipedia,’’ in Proc.
+16th ACM Conf. Conf. Inf. Knowl. Manage., Nov. 2007, pp. 41–50.
+[55] C. Hube, ‘‘Bias in Wikipedia,’’ in Proc. 26th Int. Conf. World Wide Web
+Companion, 2017, pp. 717–721.
+[56] S. Greenstein and F. Zhu, ‘‘Is Wikipedia biased?’’ Amer. Econ. Rev.,
+vol. 102, no. 3, pp. 343–348, May 2012.
+[57] E. S. Callahan and S. C. Herring, ‘‘Cultural bias in Wikipedia content
+on famous persons,’’ J. Amer. Soc. Inf. Sci. Technol., vol. 62, no. 10,
+pp. 1899–1915, Oct. 2011.
+[58] K. N. Singh, S. D. Devi, H. M. Devi, and A. K. Mahanta, ‘‘A novel
+approach for dimension reduction using word embedding: An enhanced
+text classification approach,’’ Int. J. Inf. Manage. Data Insights, vol. 2,
+no. 1, Apr. 2022, Art. no. 100061.
+[59] X. Li, Z. Li, J. Li, H. Xie, and Q. Li, ‘‘2D Matryoshka sentence
+embeddings,’’ 2024, arXiv:2402.14776.
+[60] A. Kusupati, G. Bhatt, A. Rege, M. Wallingford, A. Sinha, V. Ramanujan,
+W. Howard-Snyder, K. Chen, S. Kakade, and P. Jain, ‘‘Matryoshka
+representation learning,’’ in Proc. Adv. Neural Inf. Process. Syst., vol. 35,
+2022, pp. 30233–30249.
+[61] Z. Liu, H. Liang, B. Li, W. Xiong, C. Chen, C. He, W. Zhang, and B. Cui,
+‘‘SynthVLM: Towards high-quality and efficient synthesis of image-
+caption datasets for vision-language models,’’ 2024, arXiv:2407.20756.
+[62] M. Z. Wong, K. Kunii, M. Baylis, W. H. Ong, P. Kroupa, and S.
+Koller, ‘‘Synthetic dataset generation for object-to-model deep learning
+in industrial applications,’’ PeerJ Comput. Sci., vol. 5, p. e222, Oct. 2019.
+[63] Y. Chen and Z. Zhang, ‘‘A study of sentence similarity based on the all-
+minilm-l6-v2 model with ‘same semantics, different structure’ after fine
+tuning,’’ in Proc. 2nd Int. Conf. Image, 2024, pp. 677–684.
+[64] E. Vergou, I. Pagouni, M. Nanos, and K. L. Kermanidis, ‘‘Readability
+classification with Wikipedia data and all-MiniLM embeddings,’’ in Proc.
+IFIP Int. Conf. Artif. Intell. Appl. Innov., 2023, pp. 369–380.
+[65] O. Press and L. Wolf, ‘‘Using the output embedding to improve language
+models,’’ 2016, arXiv:1608.05859.
+[66] S. Liu, C. Gao, Y. Chen, D. Jin, and Y. Li, ‘‘Learnable embedding sizes
+for recommender systems,’’ 2021, arXiv:2101.07577.
+[67] T. Jiang, S. Huang, Z. Luan, D. Wang, and F. Zhuang, ‘‘Scaling sentence
+embeddings with large language models,’’ 2023, arXiv:2307.16645.
+[68] A. Merchant, E. Rahimtoroghi, E. Pavlick, and I. Tenney, ‘‘What happens
+to BERT embeddings during fine-tuning?’’ 2020, arXiv:2004.14448.
+[69] C. Lee, R. Roy, M. Xu, J. Raiman, M. Shoeybi, B. Catanzaro, and W. Ping,
+‘‘NV-embed: Improved techniques for training LLMs as generalist
+embedding models,’’ 2024, arXiv:2405.17428.
+[70] S. Xiao, Z. Liu, P. Zhang, N. Muennighoff, D. Lian, and J.-Y. Nie, ‘‘C-
+pack: Packed resources for general Chinese embeddings,’’ in Proc. 47th
+Int. ACM SIGIR Conf. Res. Develop. Inf. Retr., Jul. 2024, pp. 641–649.
+[71] J. Brogan, A. Bharati, D. Moreira, K. Bowyer, P. Flynn, A. Rocha, and
+W. Scheirer, ‘‘Dynamic spatial verification for large-scale object-level
+image retrieval,’’ 2019, arXiv:1903.10019.
+[72] C. An, S. Gong, M. Zhong, X. Zhao, M. Li, J. Zhang, L. Kong, and X. Qiu,
+‘‘L-eval: Instituting standardized evaluation for long context language
+models,’’ in Proc. 62nd Annu. Meeting Assoc. Comput. Linguistics (Long
+Papers), vol. 1, 2024, pp. 14388–14411.
+[73] Y. Bai, X. Lv, J. Zhang, H. Lyu, J. Tang, Z. Huang, Z. Du, X. Liu, A. Zeng,
+and L. Hou, ‘‘LongBench: A bilingual, multitask benchmark for long
+context understanding,’’ in Proc. 62nd Annu. Meeting Assoc. Comput.
+Linguistics (Long Papers), 2024, pp. 3119–3137.
+[74] M. Wang, L. Chen, F. Cheng, S. Liao, X. Zhang, B. Wu, H. Yu, N. Xu, L.
+Zhang, R. Luo, Y. Li, M. Yang, F. Huang, and Y. Li, ‘‘Leave no document
+behind: Benchmarking long-context LLMs with extended multi-doc
+QA,’’ in Proc. Conf. Empirical Methods Natural Lang. Process., 2024,
+pp. 5627–5646.
+[75] K. Santhanam, J. Saad-Falcon, M. Franz, O. Khattab, A. Sil, R. Florian,
+M. A. Sultan, S. Roukos, M. Zaharia, and C. Potts, ‘‘Moving beyond
+downstream task accuracy for information retrieval benchmarking,’’
+2022, arXiv:2212.01340.
+[76] H. Cao, ‘‘Recent advances in text embedding: A comprehensive
+review of top-performing methods on the MTEB benchmark,’’ 2024,
+arXiv:2406.01607.
+[77] N. Thakur, N. Reimers, A. Rücklé, A. Srivastava, and I. Gurevych,
+‘‘BEIR: A heterogenous benchmark for zero-shot evaluation of informa-
+tion retrieval models,’’ 2021, arXiv:2104.08663.
+[78] A. Wang, Y. Pruksachatkun, N. Nangia, A. Singh, J. Michael, F. Hill,
+O. Levy, and S. R. Bowman, ‘‘SuperGLUE: A stickier benchmark for
+general-purpose language understanding systems,’’ in Proc. Adv. Neural
+Inf. Process. Syst., 2019, pp. 1–15.
+[79] C. Aliferis and G. Simon, ‘‘Overfitting, underfitting and general model
+overconfidence and under-performance pitfalls and best practices in
+machine learning and AI,’’ in Artificial Intelligence and Machine
+Learning in Health Care and Medical Sciences: Best Practices and
+Pitfalls. Springer, 2024, pp. 477–524.
+[80] S. Ni, X. Kong, C. Li, X. Hu, R. Xu, J. Zhu, and M. Yang, ‘‘Training on
+the benchmark is not all you need,’’ 2024, arXiv:2409.01790.
+[81] B. Wang, A. Wang, F. Chen, Y. Wang, and C.-C.-J. Kuo, ‘‘Evaluating word
+embedding models: Methods and experimental results,’’ APSIPA Trans.
+Signal Inf. Process., vol. 8, no. 1, p. 19, 2019.
+[82] O. Papakyriakopoulos, S. Hegelich, J. C. M. Serrano, and F. Marco,
+‘‘Bias in word embeddings,’’ in Proc. Conf. Fairness, Accountability,
+Transparency, Jan. 2020, pp. 446–457.
+[83] V. Rakivnenko, N. Maslej, J. Cervi, and V. Zhukov, ‘‘Bias in text
+embedding models,’’ 2024, arXiv:2406.12138.
+[84] N. Swinger, M. De-Arteaga, N. T. Heffernan IV, M. D. Leiserson, and
+A. T. Kalai, ‘‘What are the biases in my word embedding?’’ in Proc.
+AAAI/ACM Conf. AI, Ethics, Soc., Jan. 2019, pp. 305–311.
+[85] Z. Yin and Y. Shen, ‘‘On the dimensionality of word embedding,’’ in Proc.
+Adv. Neural Inf. Process. Syst. (NeurIPS), vol. 31, 2018, pp. 1–12.
+[86] J. C. Robinson, Dimensions, Embeddings, Attractors, vol. 186. Cam-
+bridge, U.K.: Cambridge Univ. Press, 2010.
+[87] D. S. Asudani, N. K. Nagwani, and P. Singh, ‘‘Impact of word embedding
+models on text analytics in deep learning environment: A review,’’ Artif.
+Intell. Rev., vol. 56, no. 9, pp. 10345–10425, Sep. 2023.
+[88] V. Veitch, D. Sridhar, and D. M. Blei, ‘‘Adapting text embeddings
+for causal inference,’’ in Proc. Conf. Uncertainty Artif. Intell., 2019,
+pp. 919–928.
+[89] R. Astudillo, S. Amir, W. Ling, M. Silva, and I. Trancoso, ‘‘Learning word
+representations from scarce and noisy data with embedding subspaces,’’
+in Proc. 53rd Annu. Meeting Assoc. Comput. Linguistics 7th Int. Joint
+Conf. Natural Lang. Process. (Long Papers), vol. 1, 2015, pp. 1074–1084.
+[90] Z. Rahimi and M. M. Homayounpour, ‘‘The impact of preprocessing
+on word embedding quality: A comparative study,’’ Lang. Resour. Eval.,
+vol. 57, no. 1, pp. 257–291, Mar. 2023.
+[91] A. Daruna, M. Gupta, M. Sridharan, and S. Chernova, ‘‘Continual
+learning of knowledge graph embeddings,’’ IEEE Robot. Autom. Lett.,
+vol. 6, no. 2, pp. 1128–1135, Apr. 2021.
+[92] Q. Liu, J. Hu, Y. Xiao, X. Zhao, J. Gao, W. Wang, Q. Li, and J. Tang,
+‘‘Multimodal recommender systems: A survey,’’ ACM Comput. Surv.,
+vol. 57, no. 2, pp. 1–17, Feb. 2025.
+[93] M. Patel, ‘‘TinySearch—Semantics based search engine using BERT
+embeddings,’’ 2019, arXiv:1908.02451.
+[94] J.-T. Huang, A. Sharma, S. Sun, L. Xia, D. Zhang, P. Pronin, J.
+Padmanabhan, G. Ottaviano, and L. Yang, ‘‘Embedding-based retrieval
+in Facebook search,’’ in Proc. 26th ACM SIGKDD Int. Conf. Knowl.
+Discovery Data Mining, Aug. 2020, pp. 2553–2561.
+[95] M. G. Ozsoy, ‘‘From word embeddings to item recommendation,’’ 2016,
+arXiv:1601.01356.
+[96] F. Zhang, N. J. Yuan, D. Lian, X. Xie, and W.-Y. Ma, ‘‘Collaborative
+knowledge base embedding for recommender systems,’’ in Proc. 22nd
+ACM SIGKDD Int. Conf. Knowl. Discovery Data Mining, Aug. 2016,
+pp. 353–362.
+VOLUME 14, 2026 41301
+J. O. Abimbola et al.: Open-Source Embedding Models: A Comprehensive Survey
+[97] I. Fursov, E. Kovtun, R. Rivera-Castro, A. Zaytsev, R. Khasyanov,
+M. Spindler, and E. Burnaev, ‘‘Sequence embeddings help detect
+insurance fraud,’’ IEEE Access, vol. 10, pp. 32060–32074, 2022.
+[98] G. Liu, J. Guo, Y. Zuo, J. Wu, and R.-Y. Guo, ‘‘Fraud detection via
+behavioral sequence embedding,’’ Knowl. Inf. Syst., vol. 62, no. 7,
+pp. 2685–2708, Jul. 2020.
+[99] S. Yazdani, R. C. Henry, A. Byrne, and I. C. Henry, ‘‘Utility of word
+embeddings from large language models in medical diagnosis,’’ J. Amer.
+Med. Inform. Assoc., vol. 32, no. 3, pp. 526–534, Mar. 2025.
+[100] K. S. Kalyan and S. Sangeetha, ‘‘SECNLP: A survey of embeddings
+in clinical natural language processing,’’ J. Biomed. Informat., vol. 101,
+Jan. 2020, Art. no. 103323.
+[101] J. Lee, W. Yoon, S. Kim, D. Kim, S. Kim, C. H. So, and J. Kang,
+‘‘BioBERT: A pre-trained biomedical language representation model for
+biomedical text mining,’’ Bioinformatics, vol. 36, no. 4, pp. 1234–1240,
+Feb. 2020.
+[102] K. Huang, J. Altosaar, and R. Ranganath, ‘‘ClinicalBERT: Modeling clin-
+ical notes and predicting hospital readmission,’’ 2019, arXiv:1904.05342.
+[103] I. O. William and M. Altamimi, ‘‘Text embedding implementation
+using retrieval augmented generation (RAG) model combined with large
+language model,’’ Int. J. Adv. Natural Sci. Eng. Researches, vol. 5, no. 5,
+pp. 1–9, 2024.
+[104] D. Rau, S. Wang, H. Déjean, and S. Clinchant, ‘‘Context embeddings for
+efficient answer generation in RAG,’’ 2024, arXiv:2407.09252.
+[105] T. Walkowiak and M. Gniewkowski, ‘‘Evaluation of vector embedding
+models in clustering of text documents,’’ in Proc. Int. Conf. Recent Adv.
+Natural Lang. Process. (RANLP), Oct. 2019, pp. 1304–1311.
+[106] Z. Chen, Z. Chen, P. Ren, Z. Ren, M. Rijke, W. Sun, S. Wang, L. Yan,
+D. Yin, and H. Zhu, ‘‘Learning to tokenize for generative retrieval,’’ in
+Proc. Adv. Neural Inf. Process. Syst., 2023, pp. 46345–46361.
+[107] E. Chi, L. Heldt, L. Hong, R. H. Keshavan, M. Kula, N. Mehta, S. Rajput,
+J. Samost, M. Sathiamoorthy, A. Singh, Y. Tay, V. Tran, and T. Vu,
+‘‘Recommender systems with generative retrieval,’’ in Proc. Adv. Neural
+Inf. Process. Syst., 2023, pp. 10299–10315.
+[108] S. Kim, X. Zhu, X. Lin, M. Bastan, D. Gray, and S. Kwak, ‘‘GENIUS:
+A generative framework for universal multimodal search,’’ in Proc.
+IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2025,
+pp. 19659–19669.
+JEREMIAH O. ABIMBOLA received the B.Sc.
+degree in computer science from the Federal
+University of Technology, Akure, Nigeria, the
+M.Sc. degree in computer science and tech-
+nology from Changchun University of Science
+and Technology, China, in 2020, and the Ph.D.
+degree in computer science (specializing in artifi-
+cial intelligence and music information retrieval)
+from Silesian University of Technology, Gliwice,
+Poland, in 2024. From 2020 to 2024, he was
+a Doctoral Researcher with the Department of Applied Informatics,
+Silesian University of Technology. After completed the Ph.D., he joined
+Silesian University of Technology as a research/academic role (an Assistant
+Professor). His research focuses on music information retrieval (MIR)
+and artificial intelligence, including time-signature and tempo detection
+in music using deep learning (e.g., ResNet18), dataset creation for MIR
+(e.g., METER2800), ensemble and genetic-algorithm approaches for model
+optimization, and related audio-signal processing methods. He has also
+worked on applied topics at the intersection of machine learning and
+cybersecurity. In addition to his academic work, he is active as an ML/AI
+Engineer and in tech community roles and maintains professional profiles
+on LinkedIn and ResearchGate.
+GODLOVE SUILA KUABAN received the B.Eng.
+degree in electrical and electronics engineer-
+ing (telecommunications) from the University
+of Buea, Cameroon, in 2014, and the M.Sc.
+degree in interdisciplinary studies of automatic
+control, robotics, electronics, telecommunications,
+and computer science (specializing in computer
+science) and the Ph.D. degree in telecommunica-
+tions and technical computer science from Silesian
+University of Technology, Gliwice, Poland, in
+2017 and 2023, respectively. From 2017 to 2023, he was a Research Assistant
+with the Institute of Theoretical and Applied Informatics, Polish Academy of
+Sciences (IITiS-PAN), Gliwice, where he is currently an Assistant Professor.
+He has contributed to six EU-funded research projects, including work on
+IoT security, green computing, high performance computing, IoT laboratory
+testbed development, online education resources for Assembly Language
+Programming, and reliable electronics for next-generation systems. His
+research focuses on computer systems modeling and performance evaluation,
+with an emphasis on software-defined networking (SDN), IoT networks,
+and the energy performance of green communication systems, including the
+IoT, cellular, and linear wireless sensor networks. His interests also include
+the application of artificial intelligence techniques in mixed reality systems,
+performance engineering, and smart agriculture. He was a recipient of the
+Best Paper Award at the IEEE International Symposium on the Modeling,
+Analysis, and Simulation of Computer and Telecommunication Systems
+(MASCOTS 2023, Stony Brook, NY, USA; and MASCOTS 2024, Kraków,
+Poland).
+SAMUEL ABIOLA AJAYI received the B.Tech.
+degree in mechanical engineering from the Ladoke
+Akintola University of Technology, Nigeria,
+in 2018, and the M.Eng. degree in mechanical
+engineering from Hanbat National University,
+South Korea, in 2024. He is currently pursuing
+the Ph.D. degree in computer science with Texas
+Southern University, USA. He is a seasoned
+Mechanical Engineer with extensive expertise
+in heat and mass transfer, thermodynamics,
+refrigeration systems, CO capture and transportation, energy systems,
+automotive maintenance, welding, and fabrication. His research and
+academic focus span advanced computing, algorithms, artificial intelligence,
+cybersecurity, data science, and machine learning.
+41302 VOLUME 14, 2026
+

@@ -1,0 +1,232 @@
+.
+.
+Latest updates: hps://dl.acm.org/doi/10.1145/3583780.3615994
+.
+.
+ABSTRACT
+Comparative Analysis of Open Source and Commercial Embedding
+Models for estion Answering
+GEORGIOS BALIKAS, Salesforce.com, Inc., San Francisco, CA, United States
+.
+.
+.
+Open Access Support provided by:
+.
+Salesforce.com, Inc.
+.
+PDF Download
+3583780.3615994.pdf
+25 March 2026
+Total Citations: 2
+Total Downloads: 161
+.
+.
+Published: 21 October 2023
+.
+.
+Citation in BibTeX format
+.
+.
+CIKM '23: The 32nd ACM International
+Conference on Information and
+Knowledge Management
+October 21 - 25, 2023
+Birmingham, United Kingdom
+.
+.
+Conference Sponsors:
+SIGIR
+SIGWEB
+CIKM '23: Proceedings of the 32nd ACM International Conference on Information and Knowledge Management (October 2023)
+hps://doi.org/10.1145/3583780.3615994
+ISBN: 9798400701245
+.
+Comparative Analysis of Open Source and Commercial
+Embedding Models for Question Answering
+Georgios Balikas
+geompalik@hotmail.com
+Salesforce Inc.
+France
+ABSTRACT
+In this industry track presentation, we will provide a comprehen-
+sive tour of the best performing embedding models for question
+answering, as determined by the Massive Text Embedding Bench-
+mark.1 We showcase these models while also considering solutions
+offered by OpenAI and Cohere, renowned for their state-of-the-art
+performance. Through rigorous evaluations on internal Salesforce
+datasets tailored for Question Answering on Knowledge articles,
+we compare the performance of these models using standardized
+metrics.
+Our analysis sheds light on the current state-of-the-art in ques-
+tion answering using embedding models across three diverse do-
+mains. We hope that this talk’s outcomes will empower practition-
+ers and researchers to make informed decisions when selecting the
+most suitable solution for their specific requirements.
+ACM Reference Format:
+Georgios Balikas. 2023. Comparative Analysis of Open Source and Commer-
+cial Embedding Models for Question Answering. In Proceedings of the 32nd
+ACM International Conference on Information and Knowledge Management
+(CIKM ’23), October 21–25, 2023, Birmingham, United Kingdom. ACM, New
+York, NY, USA, 2 pages. https://doi.org/10.1145/3583780.3615994
+1 INTRODUCTION
+In this talk, we present a comparison of embedding models for
+question answering (QnA), focusing on their performance in real-
+world QnA scenarios. The best practises and the lessons learned
+shared in this talk stem from deploying a QnA system in production
+as part of Salesforce Search on Knowledge articles. The system
+today serves several thousands of QnA queries daily.
+A high-level version of the QnA pipeline architecture in pro-
+duction is shown in Figure 1. It is inspired from [1] where it is
+shown that it can be highly beneficial to combine sparse and dense
+retrieval. In the talk we will highlight the major parts of the ar-
+chitecture enumerating its advantages and some of the challenges
+when putting it in production at scale.
+To shed light on the impact of embedding models we will use
+three human-annotated, internal datasets from different profes-
+sional domains ranging from manufacturing to job portals. We will
+1https://huggingface.co/spaces/mteb/leaderboard
+Permission to make digital or hard copies of part or all of this work for personal or
+classroom use is granted without fee provided that copies are not made or distributed
+for profit or commercial advantage and that copies bear this notice and the full citation
+on the first page. Copyrights for third-party components of this work must be honored.
+For all other uses, contact the owner/author(s).
+CIKM ’23, October 21–25, 2023, Birmingham, United Kingdom
+© 2023 Copyright held by the owner/author(s).
+ACM ISBN 979-8-4007-0124-5/23/10.
+https://doi.org/10.1145/3583780.3615994
+demonstrate how the question answering performance changes
+based on the embedding model used and how it compares to more
+traditional retrieval representations such as BM25.
+2 PROBLEM SETTING
+Salesforce Customer Relations Management (CRM) organises cus-
+tomer data under different objects depending on their type. Some
+examples include Accounts, which are commonly used to store
+organisations and Opportunities, which hold information about
+business deals. One of these objects is the Knowledge object, which
+lets customers create their knowledge base. The Knowledge base
+of each customer is built from knowledge articles, which are doc-
+uments of information. Articles can include information on pro-
+cesses, like how to reset a product to its defaults, or frequently
+asked questions, like how much storage a product supports.
+The specificity of knowledge articles compared to records of
+other standard objects of Salesforce CRM is that they are long text
+documents.2 As a counter-example, Accounts mostly contain struc-
+tured information as key-values, like forms. Due to this, Knowledge
+articles can be used to build modern NLP products, like QnA that
+aims to reduce the effort of users when seeking information.
+A major challenge when building such NLP products at Sales-
+force scale is the requirement to perform well across thousands
+of customers. Customer data are kept separate in a multi-tenant
+environment: one can not pool data across customers to train or
+fine-tune global models that use data from other customers. Also,
+any deployed solution needs to perform well across customers
+whose data are different: Salesforce has customers that use very
+different vocabulary whose distribution is often very different from
+publicly available resources like Wikipedia.
+3 QUESTION ANSWERING PIPELINE
+A high-level version of the online (inference) QnA pipeline archi-
+tecture in production is shown in Figure 1. It is inspired from [1]
+where it is shown that it can be highly beneficial to combine sparse
+and dense retrieval. The indexing pipeline which pre-processes the
+knowledge articles and hydrates the sparse and the dense indexes
+is not shown here due to the lack of space. An important detail is
+that as in [1], articles are split in passages. Passages are small text
+spans that respect minimum and maximum length limits as well as
+the HTML format of the article.
+In the online pipeline of Figure 1 each component functions as
+follows:
+• Dense Retrieval: a query is transformed to a dense vector
+using an embedding model. The vector is issued as a query in
+a dense index and the most relevant passages are retrieved.
+2https://help.salesforce.com/s/articleView?id=sf.knowledge_whatis.htm&type=5
+5232
+CIKM ’23, October 21–25, 2023, Birmingham, United Kingdom Georgios Balikas
+Input Query
+Dense Retrieval
+Sparse Retrieval
+Fusion Ranker Postprocessing SERP Module
+Figure 1: Online Question Answering Architecture: An input query hits the indexes. Their ranked lists of results are merged with
+a “Fusion Ranker” model that combines their scores. The reranked list of scores is further processed in the the “Postprocessing”
+module which applies business logic and decides between Show/No Show for the top-1 result.
+• Sparse Retrieval: a query is transformed to a sparse vector
+using a scheme like BM25. The vector is issued as a query in
+a sparse index and the most relevant passages are retrieved.
+• Fusion Reranker: The ordered lists of sparse and dense
+passages are merged using a combination of their scores.
+• Postprocessing: The merged list of ranked passages is pro-
+cessed and business logic is applied. Depending on a score
+threshold that acts as a cut-off a passage may be shown as
+result to the Search Result Page (SERP) module.
+4 EMBEDDING MODEL EVALUATION
+We present the evaluation of the sparse, dense and fusion parts of
+the pipeline in Table 1. We choose Accuracy@1 as our evaluation
+measure which we define as the ratio of queries whose answer
+is part of the top-1 ranked passage. For a more complete view of
+the embedding model landscape, we add evaluations with embed-
+dings from paid APIs like OpenAI (text-embedding-ada-002) and
+Cohere (embed).
+Models Domain A Domain B Domain C
+Sparse Only
+bm25 47.4 39.24 60.21
+Dense Models Only
+miniLM3 [3] 52.41 38.52 55.74
+cohere (large) 58.48 45.34 56.50
+infloat/e5-base [4] 59.17 44.71 57.42
+infloat/e5-large [4] 59.78 45.81 59.5
+gtr-t5-xl [2] 58.90 50.11 59.33
+openAI4 62.00 48.00 59.18
+Fusion
+bm25+miniLM [3] 58.66 46.12 63.64
+bm25+e5-base [4] 62.43 52.14 64.08
+bm25+e5-large [4] 61.64 52.36 65.50
+bm25+openAI 63.50 55.70 64.02
+Table 1: Comparison of embedding models on internal
+datasets from 3 domains. We observe that recent embedding
+models are very comparable with sparse representations and
+that their combination greatly improves the performance.
+There are several observations on the table that we hope will
+be the basis for fruitful and interactive discussions in the industry
+day:
+• The comparison between sparse and dense retrieval methods.
+In particular, depending on the domain (e.g, Domain C),
+sparse representations are very competitive.
+• The trade-offs between open-source models and embedding
+providers. Notice, for example, that the gap between OpenAI
+and open-source models closes.
+• Extensions of this architecture to improve the QnA user
+experience. LLMs can play an important role for this.
+There are other lessons learned from putting the QnA system in
+production we plan to share as part of the talk:
+• Generating quality passages from the article HTML is not
+trivial. While HTML tags help, exclusively relying on them
+is not sufficient.
+• Embedding models progress fast: to benefit model details
+need to be abstracted out from the design.
+• Correlating online with offline metrics for products whose
+success means good abandonment (no click) is challenging.
+Short Bio Georgios Balikas is a Lead Data Scientist as Salesforce.
+He works for the Search Relevance teams improving the relevance
+of the Salesforce Search results. His interests span information re-
+trieval, natural language processing and machine learning. He also
+enjoys presenting on best ML system design practises on academic
+(industry days of ECIR 2020, Applied ML Days at EPFL 2020, ECML
+2022) and soft. engineering (PyData Global 2022) venues. He holds
+a PhD from the University of Grenoble Alps.
+REFERENCES
+[1] Vladimir Karpukhin, Barlas Oğuz, Sewon Min, Patrick Lewis, Ledell Wu, Sergey
+Edunov, Danqi Chen, and Wen-tau Yih. 2020. Dense passage retrieval for open-
+domain question answering. arXiv preprint arXiv:2004.04906 (2020).
+[2] Jianmo Ni, Chen Qu, Jing Lu, Zhuyun Dai, Gustavo Hernández Ábrego, Ji Ma,
+Vincent Y Zhao, Yi Luan, Keith B Hall, Ming-Wei Chang, et al. 2021. Large dual
+encoders are generalizable retrievers. arXiv preprint arXiv:2112.07899 (2021).
+[3] Nils Reimers and Iryna Gurevych. 2019. Sentence-BERT: Sentence Embeddings
+using Siamese BERT-Networks. In Proceedings of the 2019 Conference on Empirical
+Methods in Natural Language Processing. Association for Computational Linguistics.
+http://arxiv.org/abs/1908.10084
+[4] Liang Wang, Nan Yang, Xiaolong Huang, Binxing Jiao, Linjun Yang, Daxin Jiang,
+Rangan Majumder, and Furu Wei. 2022. Text Embeddings by Weakly-Supervised
+Contrastive Pre-training. arXiv preprint arXiv:2212.03533 (2022).
+3We use the sentence-tranformers/all-miniLM-L6-v2
+4We use the text-embedding-ada-002
+5233
+

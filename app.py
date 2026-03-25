@@ -4,6 +4,7 @@ import os
 import sys
 from urllib.parse import urlparse
 
+import chromadb
 import httpx
 import magic
 from dotenv import load_dotenv
@@ -215,5 +216,62 @@ def session_manager() -> None:
         image_file_indicator = False
 
 
+def vectordb_initializer() -> chromadb.Collection:
+    rag_client = chromadb.Client()
+    collection = rag_client.create_collection("embedding_model_data")
+
+    datadir = "data/text/"
+    files: list[str] = os.listdir(datadir)
+    file_paths = []
+
+    for i in files:
+        file_paths.append(datadir + i)
+
+    file_contents = []
+
+    for i in file_paths:
+        current_file_pointer = open(i, "r")
+        file_contents.append(current_file_pointer.read())
+
+    # chunking
+    chunks = []
+
+    for file in file_contents:
+        content = file
+        content = content.split()
+
+        current_chunks = []
+
+        chunk_size = 50
+        for i, w in enumerate(content):
+            if i != 0:
+                if i % chunk_size == 0:
+                    chunk = content[i - chunk_size : i]
+                    current_chunks.append(chunk)
+
+        # calculate missed words and add them as a chunk
+        included_words_count: int = len(current_chunks) * chunk_size
+        missed_chunk = content[included_words_count : len(content) - 1]
+        current_chunks.append(missed_chunk)
+
+        chunks.extend(current_chunks)
+
+    documents = []
+
+    for i in chunks:
+        documents.append(" ".join(i))
+
+    file_ids = []
+    for i in range(0, len(documents)):
+        file_ids.append("id_" + str(i))
+
+    # add contents to collection
+    collection.add(ids=file_ids, documents=documents)
+
+    return collection
+
+
 if __name__ == "__main__":
+    vectordb = vectordb_initializer()
+    sys.exit(0)
     session_manager()
